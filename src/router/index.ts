@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
 /**
@@ -34,7 +34,8 @@ const routes: RouteRecordRaw[] = [
 /** 建立 router 實例（main.ts 使用） */
 export function createAppRouter() {
   return createRouter({
-    history: createWebHistory(),
+    // 採 hash 模式（/#/play），相容 GitHub Pages 靜態託管（免設 404.html fallback）
+    history: createWebHashHistory(),
     routes,
   })
 }
