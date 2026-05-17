@@ -90,7 +90,7 @@ last_updated: 2026-05-17
 | 17 | [tasks/17-tech-pointing-pair.md](tasks/17-tech-pointing-pair.md) | 🟢 done | claude-code-sonnet | 10, 11 |
 | 18 | [tasks/18-tech-box-line-reduction.md](tasks/18-tech-box-line-reduction.md) | 🟢 done | claude-code-sonnet | 10, 11 |
 | 19 | [tasks/19-tech-naked-triple.md](tasks/19-tech-naked-triple.md) | 🟢 done | claude-code-sonnet | 10, 11 |
-| 34 | [tasks/34-ui-playback-panel.md](tasks/34-ui-playback-panel.md) | todo | - | 21, 33 |
+| 34 | [tasks/34-ui-playback-panel.md](tasks/34-ui-playback-panel.md) | 🟢 done | claude-code + sonnet | 21, 33 |
 
 ### Phase 4：分析模式
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
