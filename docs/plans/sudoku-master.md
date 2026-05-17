@@ -80,7 +80,7 @@ last_updated: 2026-05-17
 | 33 | [tasks/33-ui-hint-overlay.md](tasks/33-ui-hint-overlay.md) | 🟢 done | claude-code-sonnet | 01, 21 |
 | 40 | [tasks/40-store-game.md](tasks/40-store-game.md) | 🟢 done | claude-code | 10, 21 |
 | 41 | [tasks/41-store-persistence.md](tasks/41-store-persistence.md) | 🟢 done | claude-code | 40 |
-| 42 | [tasks/42-routing-mode.md](tasks/42-routing-mode.md) | todo | - | 30-33, 40 |
+| 42 | [tasks/42-routing-mode.md](tasks/42-routing-mode.md) | 🟢 done | claude-code | 30-33, 40 |
 
 ### Phase 3：觀摩模式 + 中階技巧
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
