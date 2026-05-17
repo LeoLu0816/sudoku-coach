@@ -11,12 +11,17 @@ import { isSolved, recomputeAllCandidates } from '@/core/validator'
 import { solve as backtrackSolve } from '@/solver/backtrack'
 import { nakedSingleSolver } from '@/techniques/nakedSingle'
 import { hiddenSingleSolver } from '@/techniques/hiddenSingle'
+import { nakedPairSolver } from '@/techniques/nakedPair'
 
 /**
  * 已註冊的技巧 solver 清單（依難度由低到高，與難度分級對應）
- * P1 階段只含 naked-single + hidden-single；後續任務（15-19）會加入中階技巧
+ * 順序與難度分級一致：基礎（single）→ 中階（pair/triple/pointing/box-line）
  */
-const registeredTechniques: TechniqueSolver[] = [nakedSingleSolver, hiddenSingleSolver]
+const registeredTechniques: TechniqueSolver[] = [
+  nakedSingleSolver,
+  hiddenSingleSolver,
+  nakedPairSolver,
+]
 
 /** 取得所有已註冊技巧（依優先順序） */
 export function getRegisteredTechniques(): TechniqueSolver[] {
