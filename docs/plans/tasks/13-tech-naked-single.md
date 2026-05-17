@@ -1,9 +1,10 @@
 ---
 id: 13-tech-naked-single
 phase: P1
-status: todo
+status: done
 depends_on: [10-board-core, 11-validator, 02-test-fixtures]
-assignee: null
+assignee: claude-code
+completed_at: 2026-05-17
 estimated_complexity: S
 acceptance:
   - "實作 TechniqueSolver 介面"
