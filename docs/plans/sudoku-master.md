@@ -213,6 +213,10 @@ deliverables:
 | `docs/plans/dispatch/{task-id}.prompt.md` | CC（派工時建立） | 給 Cursor 讀的派工 prompt |
 | `docs/plans/dispatch/{task-id}.report.md` | Cursor（完工時建立） | Cursor 回報，給 CC 驗收用 |
 
+### Git 操作分工
+- **Cursor 不做任何 git 操作**：直接在 main 分支寫檔案 + 寫 report，**不 add / commit / push / 切分支 / 建 worktree**。
+- **主 agent（CC）負責**：每個任務驗收通過後做一次 commit + push，commit message 結尾標 `[<task-id>]`，commit 順序就是任務完成順序。
+
 ### 並行派工
 若 CC 同時派發 ≥ 2 個獨立任務：
 - 每個任務一個獨立 Cursor chat（避免脈絡互相干擾）
@@ -266,6 +270,8 @@ CC 每次派工輸出以下格式，使用者直接複製貼到 Cursor：
 4. **變數命名遵循專案規範**：camelCase，正向命名（如 `enabled` 而非 `isNotDisabled`）。
 5. **每個 function 寫繁中註解**說明用途；複雜函式開頭列流程步驟。
 6. **單檔超過 300 行**請拆檔。
+7. **直接在 main 分支開工**：不要建 worktree、不要開新分支、不要做隔離。
+8. **不要執行任何 git 操作**：不 `git add`、不 `git commit`、不 `git push`、不切換分支。**commit 與 push 一律由主 agent（Claude Code）負責**，你只寫檔案 + 寫 report。
 
 ## 完工回報格式
 做完後，請回報以下內容（**整段複製給使用者**）：
