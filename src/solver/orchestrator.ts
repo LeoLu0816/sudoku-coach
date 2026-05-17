@@ -15,6 +15,7 @@ import { nakedPairSolver } from '@/techniques/nakedPair'
 import { hiddenPairSolver } from '@/techniques/hiddenPair'
 import { nakedTripleSolver } from '@/techniques/nakedTriple'
 import { pointingPairSolver } from '@/techniques/pointingPair'
+import { boxLineReductionSolver } from '@/techniques/boxLineReduction'
 
 /**
  * 已註冊的技巧 solver 清單（依難度由低到高，與難度分級對應）
@@ -27,6 +28,7 @@ const registeredTechniques: TechniqueSolver[] = [
   hiddenPairSolver,
   nakedTripleSolver,
   pointingPairSolver,
+  boxLineReductionSolver,
 ]
 
 /** 取得所有已註冊技巧（依優先順序） */

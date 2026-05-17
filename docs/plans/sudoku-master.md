@@ -85,11 +85,11 @@ last_updated: 2026-05-17
 ### Phase 3：觀摩模式 + 中階技巧
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
 |---|---|---|---|---|
-| 15 | [tasks/15-tech-naked-pair.md](tasks/15-tech-naked-pair.md) | todo | - | 10, 11 |
-| 16 | [tasks/16-tech-hidden-pair.md](tasks/16-tech-hidden-pair.md) | todo | - | 10, 11 |
-| 17 | [tasks/17-tech-pointing-pair.md](tasks/17-tech-pointing-pair.md) | todo | - | 10, 11 |
-| 18 | [tasks/18-tech-box-line-reduction.md](tasks/18-tech-box-line-reduction.md) | todo | - | 10, 11 |
-| 19 | [tasks/19-tech-naked-triple.md](tasks/19-tech-naked-triple.md) | todo | - | 10, 11 |
+| 15 | [tasks/15-tech-naked-pair.md](tasks/15-tech-naked-pair.md) | 🟢 done | claude-code-sonnet | 10, 11 |
+| 16 | [tasks/16-tech-hidden-pair.md](tasks/16-tech-hidden-pair.md) | 🟢 done | claude-code-sonnet | 10, 11 |
+| 17 | [tasks/17-tech-pointing-pair.md](tasks/17-tech-pointing-pair.md) | 🟢 done | claude-code-sonnet | 10, 11 |
+| 18 | [tasks/18-tech-box-line-reduction.md](tasks/18-tech-box-line-reduction.md) | 🟢 done | claude-code-sonnet | 10, 11 |
+| 19 | [tasks/19-tech-naked-triple.md](tasks/19-tech-naked-triple.md) | 🟢 done | claude-code-sonnet | 10, 11 |
 | 34 | [tasks/34-ui-playback-panel.md](tasks/34-ui-playback-panel.md) | todo | - | 21, 33 |
 
 ### Phase 4：分析模式
