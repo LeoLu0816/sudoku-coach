@@ -95,7 +95,7 @@ last_updated: 2026-05-17
 ### Phase 4：分析模式
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
 |---|---|---|---|---|
-| 35 | [tasks/35-ui-puzzle-input.md](tasks/35-ui-puzzle-input.md) | todo | - | 12, 30, 40 |
+| 35 | [tasks/35-ui-puzzle-input.md](tasks/35-ui-puzzle-input.md) | 🟢 done | claude-code + sonnet | 12, 30, 40 |
 
 ## 五、依賴圖（Mermaid）
 
