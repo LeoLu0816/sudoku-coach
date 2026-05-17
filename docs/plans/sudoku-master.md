@@ -57,7 +57,7 @@ last_updated: 2026-05-17
 |---|---|---|---|---|
 | 00 | [tasks/00-scaffold.md](tasks/00-scaffold.md) | 🟢 done | cursor-gpt | 專案骨架（Vite + Vue + TS + Vitest） |
 | 01 | [tasks/01-shared-types.md](tasks/01-shared-types.md) | 🟢 done | cursor-gpt | 共享型別契約（子任務間介面） |
-| 02 | [tasks/02-test-fixtures.md](tasks/02-test-fixtures.md) | todo | - | 測試題目集 |
+| 02 | [tasks/02-test-fixtures.md](tasks/02-test-fixtures.md) | 🟢 done | cursor-gpt | 測試題目集 |
 
 ### Phase 1：核心邏輯 MVP
 | ID | 檔案 | 狀態 | 負責 | 依賴 |

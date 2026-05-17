@@ -1,9 +1,10 @@
 ---
 id: 02-test-fixtures
 phase: P0
-status: todo
+status: done
 depends_on: [01-shared-types]
-assignee: null
+assignee: cursor-gpt
+completed_at: 2026-05-17
 estimated_complexity: S
 acceptance:
   - "fixtures 涵蓋每個技巧至少 3 個專屬題例"
