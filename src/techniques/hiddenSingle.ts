@@ -1,4 +1,4 @@
-import type { Board, Cell, TechniqueSolver, TechniqueStep, UnitType } from '@/types'
+import type { Cell, TechniqueSolver, TechniqueStep, UnitType } from '@/types'
 import { getUnitCells } from '@/core/board'
 
 /** unit 類型對應的人類可讀名稱 */

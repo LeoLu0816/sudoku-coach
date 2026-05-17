@@ -1,9 +1,10 @@
 ---
 id: 21-solver-orchestrator
 phase: P1
-status: todo
+status: done
 depends_on: [13-tech-naked-single, 14-tech-hidden-single, 20-solver-backtrack]
-assignee: null
+assignee: claude-code
+completed_at: 2026-05-17
 estimated_complexity: M
 acceptance:
   - "可串接技巧 solver，產出完整 SolveResult"
