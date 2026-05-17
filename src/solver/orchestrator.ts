@@ -13,6 +13,7 @@ import { nakedSingleSolver } from '@/techniques/nakedSingle'
 import { hiddenSingleSolver } from '@/techniques/hiddenSingle'
 import { nakedPairSolver } from '@/techniques/nakedPair'
 import { hiddenPairSolver } from '@/techniques/hiddenPair'
+import { nakedTripleSolver } from '@/techniques/nakedTriple'
 
 /**
  * 已註冊的技巧 solver 清單（依難度由低到高，與難度分級對應）
@@ -23,6 +24,7 @@ const registeredTechniques: TechniqueSolver[] = [
   hiddenSingleSolver,
   nakedPairSolver,
   hiddenPairSolver,
+  nakedTripleSolver,
 ]
 
 /** 取得所有已註冊技巧（依優先順序） */
