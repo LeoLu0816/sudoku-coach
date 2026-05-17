@@ -1,9 +1,10 @@
 ---
 id: 01-shared-types
 phase: P0
-status: todo
+status: done
 depends_on: [00-scaffold]
-assignee: null
+assignee: cursor-gpt
+completed_at: 2026-05-17
 estimated_complexity: S
 acceptance:
   - "src/types/ 下完整型別檔，匯出於 src/types/index.ts"
