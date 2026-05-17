@@ -74,10 +74,10 @@ last_updated: 2026-05-17
 ### Phase 2：UI MVP（遊戲模式可玩）
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
 |---|---|---|---|---|
-| 30 | [tasks/30-ui-board.md](tasks/30-ui-board.md) | todo | - | 01, 10 |
-| 31 | [tasks/31-ui-numberpad.md](tasks/31-ui-numberpad.md) | todo | - | 01 |
-| 32 | [tasks/32-ui-controlpanel.md](tasks/32-ui-controlpanel.md) | todo | - | 01 |
-| 33 | [tasks/33-ui-hint-overlay.md](tasks/33-ui-hint-overlay.md) | todo | - | 01, 21 |
+| 30 | [tasks/30-ui-board.md](tasks/30-ui-board.md) | 🟢 done | claude-code-sonnet | 01, 10 |
+| 31 | [tasks/31-ui-numberpad.md](tasks/31-ui-numberpad.md) | 🟢 done | claude-code-sonnet | 01 |
+| 32 | [tasks/32-ui-controlpanel.md](tasks/32-ui-controlpanel.md) | 🟢 done | claude-code-sonnet | 01 |
+| 33 | [tasks/33-ui-hint-overlay.md](tasks/33-ui-hint-overlay.md) | 🟢 done | claude-code-sonnet | 01, 21 |
 | 40 | [tasks/40-store-game.md](tasks/40-store-game.md) | 🟢 done | claude-code | 10, 21 |
 | 41 | [tasks/41-store-persistence.md](tasks/41-store-persistence.md) | 🟢 done | claude-code | 40 |
 | 42 | [tasks/42-routing-mode.md](tasks/42-routing-mode.md) | todo | - | 30-33, 40 |
