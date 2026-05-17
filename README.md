@@ -1,107 +1,40 @@
 # 數獨學習工具 (Sudoku Coach)
 
-純前端數獨練習與學習工具，提供「遊戲、觀摩、分析」三種模式，著重在**解題技巧的視覺化與步驟說明**，而非單純讓玩家解題。
+一款幫你**學會解題技巧**的數獨小工具，不只是讓你填數字 —— 還會告訴你「為什麼是這格」。
 
-🎮 **線上遊玩**：[https://leolu0816.github.io/sudoku-coach/](https://leolu0816.github.io/sudoku-coach/)
-
----
-
-## 功能模式
-
-| 模式 | 路由 | 說明 |
-|---|---|---|
-| 🎯 遊戲 | `/#/play` | 玩家解題，可請求提示（命中下一步技巧） |
-| 👀 觀摩 | `/#/observe` | 電腦逐步解題回放，搭配中文技巧說明 |
-| 🔍 分析 | `/#/analyze` | 自訂盤面，分析難度、唯一性與解題路徑 |
-
-支援的解題技巧（依優先順序套用）：
-- Naked Single（裸單）
-- Hidden Single（隱單）
-- Pointing Pair（指向對）
-- Hidden Pair（隱藏對）
-- Backtrack（回溯，作為 fallback）
-
-> 全程序本機運算、無後端、無追蹤；遊戲進度透過 `localStorage` 保存。
+🎮 **點我開始玩 → [https://leolu0816.github.io/sudoku-coach/](https://leolu0816.github.io/sudoku-coach/)**
 
 ---
 
-## 技術棧
+## 三種玩法
 
-- **Vue 3** + **Vite** + **TypeScript**
-- **Pinia**（狀態管理）
-- **Vue Router 4**（hash 模式，相容 GitHub Pages）
-- **Vitest** + **jsdom**（單元測試）
-- **pnpm**（套件管理）
+### 🎯 遊戲模式
+自己動手解題。卡住時可以請求**提示**，會用中文告訴你下一步該怎麼想、為什麼這格只能填某個數字。
 
-## 架構分層
+### 👀 觀摩模式
+從電腦的解題過程學技巧。**逐步播放**整個解題流程，每一步都有中文說明（裸單、隱單、指向對……），看著看著就學會了。
 
-由下而上嚴格分層，上層引用下層，**不可反向**：
-
-```
-types/        共享型別契約（合約檔）
-  └─ core/        board / validator / serializer（純函式）
-       └─ techniques/   各解題技巧 solver
-            └─ solver/       backtrack + orchestrator
-                 └─ generator/    依難度生成題目
-                      └─ stores/       Pinia store + 持久化
-                           └─ views/ + ui/   Vue 元件層
-```
-
-**新增解題技巧**只需：實作 `TechniqueSolver` 介面 → 加入 `src/solver/orchestrator.ts` 的 `registeredTechniques` 陣列，無需改型別契約。
+### 🔍 分析模式
+有題目想知道難度？把盤面輸入進來，工具會告訴你：
+- 這題的**難度等級**
+- **是否唯一解**
+- 完整的**解題路徑**
 
 ---
 
-## 開發
+## 特色
 
-需求：Node.js 20+、pnpm 9+
-
-```bash
-pnpm install
-
-pnpm dev          # 啟動開發伺服器
-pnpm build        # 型別檢查 + production build
-pnpm typecheck    # 僅型別檢查
-pnpm test         # 跑全部測試
-pnpm test:watch   # watch 模式
-pnpm lint         # ESLint
-pnpm format       # Prettier
-```
-
-執行單一測試檔：
-
-```bash
-pnpm test src/solver/orchestrator.test.ts
-```
+- ✨ **純前端**：沒有後端、沒有帳號、沒有追蹤
+- 💾 **進度自動保存**：用瀏覽器本機儲存，下次打開接著玩
+- 📱 **手機也能玩**：響應式設計，桌機平板手機都行
+- 🆓 **完全免費**：開源學習用途
 
 ---
 
-## 部署
+## 給誰玩？
 
-推送到 `main` 後，GitHub Actions 自動 build 並部署到 GitHub Pages（見 `.github/workflows/deploy.yml`）。
+- 想學**數獨解題技巧**而不只是猜數字的人
+- 想知道一個數獨題目**到底有多難**的人
+- 喜歡看電腦怎麼思考的好奇寶寶
 
-部署目標：[https://leolu0816.github.io/sudoku-coach/](https://leolu0816.github.io/sudoku-coach/)
-
----
-
-## 專案目錄
-
-```
-src/
-├─ types/           # 共享型別（Board, TechniqueSolver, Puzzle, ...）
-├─ core/            # board / validator / serializer
-├─ techniques/      # 各解題技巧實作 + 對應測試
-├─ solver/          # backtrack + orchestrator
-├─ generator/       # 題目生成
-├─ stores/          # Pinia stores（game / playback / analyze）
-├─ ui/              # 共用元件（SudokuBoard, HintOverlay, ...）
-├─ views/           # 頁面（Home / Play / Observe / Analyze）
-└─ router/          # 路由設定
-docs/
-└─ plans/           # 開發 plan 與任務文件
-```
-
----
-
-## License
-
-僅供學習用途。
+直接點上面的連結開始玩，不用註冊、不用安裝。 🎉
