@@ -12,6 +12,7 @@ import { solve as backtrackSolve } from '@/solver/backtrack'
 import { nakedSingleSolver } from '@/techniques/nakedSingle'
 import { hiddenSingleSolver } from '@/techniques/hiddenSingle'
 import { nakedPairSolver } from '@/techniques/nakedPair'
+import { hiddenPairSolver } from '@/techniques/hiddenPair'
 
 /**
  * 已註冊的技巧 solver 清單（依難度由低到高，與難度分級對應）
@@ -21,6 +22,7 @@ const registeredTechniques: TechniqueSolver[] = [
   nakedSingleSolver,
   hiddenSingleSolver,
   nakedPairSolver,
+  hiddenPairSolver,
 ]
 
 /** 取得所有已註冊技巧（依優先順序） */
