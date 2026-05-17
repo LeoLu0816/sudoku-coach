@@ -1,9 +1,10 @@
 ---
 id: 11-validator
 phase: P1
-status: todo
+status: done
 depends_on: [01-shared-types, 10-board-core]
-assignee: null
+assignee: claude-code
+completed_at: 2026-05-17
 estimated_complexity: S
 acceptance:
   - "可偵測 row/col/box 衝突"

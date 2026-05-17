@@ -63,7 +63,7 @@ last_updated: 2026-05-17
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
 |---|---|---|---|---|
 | 10 | [tasks/10-board-core.md](tasks/10-board-core.md) | 🟢 done | claude-code | 01 |
-| 11 | [tasks/11-validator.md](tasks/11-validator.md) | todo | - | 01, 10 |
+| 11 | [tasks/11-validator.md](tasks/11-validator.md) | 🟢 done | claude-code | 01, 10 |
 | 12 | [tasks/12-serializer.md](tasks/12-serializer.md) | todo | - | 01, 10 |
 | 13 | [tasks/13-tech-naked-single.md](tasks/13-tech-naked-single.md) | todo | - | 10, 11 |
 | 14 | [tasks/14-tech-hidden-single.md](tasks/14-tech-hidden-single.md) | todo | - | 10, 11 |
