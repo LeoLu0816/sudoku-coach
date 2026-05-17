@@ -1,9 +1,10 @@
 ---
 id: 41-store-persistence
 phase: P2
-status: todo
+status: done
 depends_on: [40-store-game, 12-serializer]
-assignee: null
+assignee: claude-code
+completed_at: 2026-05-17
 estimated_complexity: S
 acceptance:
   - "進度自動存 localStorage"
