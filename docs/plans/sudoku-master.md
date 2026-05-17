@@ -78,7 +78,7 @@ last_updated: 2026-05-17
 | 31 | [tasks/31-ui-numberpad.md](tasks/31-ui-numberpad.md) | todo | - | 01 |
 | 32 | [tasks/32-ui-controlpanel.md](tasks/32-ui-controlpanel.md) | todo | - | 01 |
 | 33 | [tasks/33-ui-hint-overlay.md](tasks/33-ui-hint-overlay.md) | todo | - | 01, 21 |
-| 40 | [tasks/40-store-game.md](tasks/40-store-game.md) | todo | - | 10, 21 |
+| 40 | [tasks/40-store-game.md](tasks/40-store-game.md) | 🟢 done | claude-code | 10, 21 |
 | 41 | [tasks/41-store-persistence.md](tasks/41-store-persistence.md) | todo | - | 40 |
 | 42 | [tasks/42-routing-mode.md](tasks/42-routing-mode.md) | todo | - | 30-33, 40 |
 

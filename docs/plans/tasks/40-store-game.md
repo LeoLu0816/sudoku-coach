@@ -1,9 +1,10 @@
 ---
 id: 40-store-game
 phase: P2
-status: todo
+status: done
 depends_on: [10-board-core, 11-validator, 21-solver-orchestrator, 22-puzzle-generator]
-assignee: null
+assignee: claude-code
+completed_at: 2026-05-17
 estimated_complexity: M
 acceptance:
   - "Pinia store 提供完整遊戲狀態與 actions"
