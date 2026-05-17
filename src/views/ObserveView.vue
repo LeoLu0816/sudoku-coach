@@ -114,6 +114,14 @@ function goHome(): void {
   router.push({ name: 'home' })
 }
 
+/** 重新選擇難度：開 picker，由使用者重新挑題 */
+function reselectDifficulty(): void {
+  if (autoPlaying.value) {
+    playbackStore.pause()
+  }
+  showDifficultyPicker.value = true
+}
+
 const difficultyLabel = computed(() => {
   const map: Record<Difficulty, string> = {
     easy: '簡單',
@@ -131,6 +139,14 @@ const difficultyLabel = computed(() => {
       <button class="link-btn" @click="goHome">← 首頁</button>
       <h1>觀摩模式</h1>
       <span class="difficulty-tag">難度：{{ difficultyLabel }}</span>
+      <button
+        v-if="puzzle"
+        class="link-btn"
+        data-testid="reselect-difficulty"
+        @click="reselectDifficulty"
+      >
+        重選難度
+      </button>
     </header>
 
     <section v-if="currentBoard" class="layout" data-testid="observe-layout">
