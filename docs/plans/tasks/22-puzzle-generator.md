@@ -1,9 +1,10 @@
 ---
 id: 22-puzzle-generator
 phase: P1
-status: todo
+status: done
 depends_on: [20-solver-backtrack, 21-solver-orchestrator]
-assignee: null
+assignee: claude-code
+completed_at: 2026-05-17
 estimated_complexity: M
 acceptance:
   - "可依難度生成題目（唯一解）"
