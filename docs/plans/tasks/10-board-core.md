@@ -1,9 +1,10 @@
 ---
 id: 10-board-core
 phase: P1
-status: todo
+status: done
 depends_on: [01-shared-types]
-assignee: null
+assignee: claude-code
+completed_at: 2026-05-17
 estimated_complexity: M
 acceptance:
   - "提供 Board 建立、複製、查詢、操作的純函式 API"

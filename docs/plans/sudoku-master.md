@@ -62,7 +62,7 @@ last_updated: 2026-05-17
 ### Phase 1：核心邏輯 MVP
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
 |---|---|---|---|---|
-| 10 | [tasks/10-board-core.md](tasks/10-board-core.md) | todo | - | 01 |
+| 10 | [tasks/10-board-core.md](tasks/10-board-core.md) | 🟢 done | claude-code | 01 |
 | 11 | [tasks/11-validator.md](tasks/11-validator.md) | todo | - | 01, 10 |
 | 12 | [tasks/12-serializer.md](tasks/12-serializer.md) | todo | - | 01, 10 |
 | 13 | [tasks/13-tech-naked-single.md](tasks/13-tech-naked-single.md) | todo | - | 10, 11 |
