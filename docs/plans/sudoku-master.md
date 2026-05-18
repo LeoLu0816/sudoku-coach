@@ -1,9 +1,9 @@
 ---
 id: sudoku-master
 title: 數獨學習工具 — 主 Plan
-version: 1.0.0
+version: 1.1.0
 status: planning
-last_updated: 2026-05-17
+last_updated: 2026-05-18
 ---
 
 # 數獨學習工具 — 主 Plan
@@ -29,14 +29,20 @@ last_updated: 2026-05-17
 
 ## 三、功能範圍
 
-### 解題技巧涵蓋（基礎 + 中階）
+### 解題技巧涵蓋（基礎 + 中階 + 高階）
 - Naked Single（裸單）
 - Hidden Single（隱單）
 - Naked Pair / Hidden Pair（裸對 / 隱對）
 - Naked Triple（裸三）
 - Pointing Pair（指向對）
 - Box/Line Reduction（區塊行列消除）
-- Backtrack（暴力回溯）— 僅作為 fallback 保底解題，不出提示訊息
+- **[P5 新增]** Hidden Triple（隱三）
+- **[P5 新增]** Naked Quad（裸四）
+- **[P5 新增]** X-Wing（雙線矩形）
+- **[P5 新增]** Swordfish（劍魚）
+- **[P5 新增]** XY-Wing（XY 樞紐）
+- **[P5 5B/5C 視情況追加]** Skyscraper、Simple Coloring、Unique Rectangle Type 1、XYZ-Wing
+- Backtrack（暴力回溯）— 僅作為 fallback 保底解題，不出提示訊息；若觸發時 `SolveResult.outOfTechniqueScope=true`，觀摩/分析 UI 明標「此題超出技巧範圍」
 
 ### 難度分級（生成器依此分級）
 | 難度 | 解出所需技巧 |
@@ -45,6 +51,7 @@ last_updated: 2026-05-17
 | 中等 | + Hidden Single |
 | 困難 | + Naked/Hidden Pair、Pointing Pair |
 | 專家 | + Triple、Box/Line Reduction（用滿所有中階技巧） |
+| **大師（P5 5C 新增）** | + Hidden Triple、Naked Quad、X-Wing、Swordfish、XY-Wing（用到任一高階技巧） |
 
 ### 題目來源
 - 演算法即時生成
@@ -96,6 +103,50 @@ last_updated: 2026-05-17
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
 |---|---|---|---|---|
 | 35 | [tasks/35-ui-puzzle-input.md](tasks/35-ui-puzzle-input.md) | 🟢 done | claude-code + sonnet | 12, 30, 40 |
+
+### Phase 5：高階技巧（讓 expert+ 題目不依賴 backtrack）
+
+**動機**：使用者回報的測試題 `user-puzzle-regression.test.ts` 在第 31 步技巧用盡後 fallback 到 backtrack。學習工具的核心價值是教技巧，不能讓玩家在卡關時看到「電腦在猜」。
+
+**策略**：批次驗證 — 先做 Tier 1（5 個常見高階技巧）+ 整合，跑回歸題目；**若仍 fallback** 才展開 5B / 5C。
+
+#### 5A 批次（先做，驗證能否解 user-puzzle）
+
+| ID | 檔案 | 狀態 | 負責 | 依賴 |
+|---|---|---|---|---|
+| 50 | [tasks/50-contract-and-uniqueness.md](tasks/50-contract-and-uniqueness.md) | ⚪ todo | claude-code（主 agent 親自） | 01 |
+| 51 | [tasks/51-tech-hidden-triple.md](tasks/51-tech-hidden-triple.md) | ⚪ todo | null | 50, 10, 11 |
+| 52 | [tasks/52-tech-naked-quad.md](tasks/52-tech-naked-quad.md) | ⚪ todo | null | 50, 10, 11 |
+| 53 | [tasks/53-tech-x-wing.md](tasks/53-tech-x-wing.md) | ⚪ todo | null | 50, 10, 11 |
+| 54 | [tasks/54-tech-swordfish.md](tasks/54-tech-swordfish.md) | ⚪ todo | null | 50, 10, 11 |
+| 55 | [tasks/55-tech-xy-wing.md](tasks/55-tech-xy-wing.md) | ⚪ todo | null | 50, 10, 11 |
+| 56 | [tasks/56-integration-regression.md](tasks/56-integration-regression.md) | ⚪ todo | claude-code（主 agent 親自） | 50–55 |
+
+**Tier 1 並行區塊**：T51-T55 可一次平行派 5 個 Cursor chat（皆只依賴 T50 契約異動，互不衝突；orchestrator 註冊與測試由 T56 整合處理，避免合流衝突）。
+
+#### 5B 批次（看 5A 結果決定要不要做，先列標題不展開）
+
+| ID | 標題 | 預計 |
+|---|---|---|
+| 57 | Skyscraper / Two-String Kite | 若 5A 後 user-puzzle 仍 fallback 才寫 task 細節 |
+| 58 | Simple Coloring（單數字） | 同上 |
+| 59 | Unique Rectangle Type 1 | 同上 |
+| 60 | XYZ-Wing（備用） | 同上 |
+
+#### 5C 收尾（5A/5B 結束後規劃，先列標題不展開）
+
+| ID | 標題 | 預計 |
+|---|---|---|
+| 61 | 'master' 難度生成器調整 | 5A/5B 完工後 |
+| 62 | Playback 技巧分類過濾/著色 UI | 5A/5B 完工後 |
+| 63 | `outOfTechniqueScope=true` 時觀摩/分析 UI 標示 | 與 56 共用 type；5C 補 UI |
+
+#### Phase 5 整合驗收
+- `pnpm test` 全綠
+- `src/__tests__/user-puzzle-regression.test.ts` 被改寫為「期望 `result.fallbackUsed === false` 且由 Tier 1 高階技巧解出」（即不再期望 fallback；驗證題目唯一性已於 T50 確認）
+- `pnpm typecheck` 全綠
+- 觀摩模式手動測一題用到高階技巧的盤面，UI 推理說明可讀
+- 若 Tier 1 仍解不出 → 進 5B 並更新本表「動機/策略」段
 
 ## 五、依賴圖（Mermaid）
 
