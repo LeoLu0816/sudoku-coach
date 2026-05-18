@@ -16,6 +16,11 @@ import { hiddenPairSolver } from '@/techniques/hiddenPair'
 import { nakedTripleSolver } from '@/techniques/nakedTriple'
 import { pointingPairSolver } from '@/techniques/pointingPair'
 import { boxLineReductionSolver } from '@/techniques/boxLineReduction'
+import { hiddenTripleSolver } from '@/techniques/hiddenTriple'
+import { nakedQuadSolver } from '@/techniques/nakedQuad'
+import { xWingSolver } from '@/techniques/xWing'
+import { swordfishSolver } from '@/techniques/swordfish'
+import { xyWingSolver } from '@/techniques/xyWing'
 
 /**
  * 已註冊的技巧 solver 清單（依難度由低到高，與難度分級對應）
@@ -29,6 +34,12 @@ const registeredTechniques: TechniqueSolver[] = [
   nakedTripleSolver,
   pointingPairSolver,
   boxLineReductionSolver,
+  // Tier 1 高階（依易理解度排序）
+  hiddenTripleSolver,
+  nakedQuadSolver,
+  xWingSolver,
+  swordfishSolver,
+  xyWingSolver,
 ]
 
 /** 取得所有已註冊技巧（依優先順序） */
