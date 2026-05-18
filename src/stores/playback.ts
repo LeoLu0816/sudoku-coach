@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import type { Board, Puzzle, TechniqueStep } from '@/types'
 import { createBoardFromGiven } from '@/core/board'
 import { recomputeAllCandidates } from '@/core/validator'
-import { applyStep, solveWithSteps } from '@/solver/orchestrator'
+import { applyStepAndUpdate, solveWithSteps } from '@/solver/orchestrator'
 
 /** 自動播放速度 */
 export type PlaybackSpeed = 'slow' | 'normal' | 'fast'
@@ -92,8 +92,10 @@ export const usePlaybackStore = defineStore('playback', () => {
    * 載入題目並預先解題
    * 1. 建立初始 board 並 recompute candidates
    * 2. 呼叫 solveWithSteps 取得完整步驟
-   * 3. 逐步套用步驟，建立 intermediateBoards 陣列
-   * 4. 重設所有狀態
+   * 3. 若 fallback 完成解題，從 finalBoard diff 出剩餘格，補成 backtrack 步驟，
+   *    讓觀摩模式不會卡在「技巧層用盡但盤面尚未填完」
+   * 4. 逐步套用步驟，建立 intermediateBoards 陣列
+   * 5. 重設所有狀態
    */
   function loadPuzzle(p: Puzzle): void {
     // 1. 建初始 board
@@ -102,19 +104,45 @@ export const usePlaybackStore = defineStore('playback', () => {
     // 2. 解題取得完整步驟
     const result = solveWithSteps(initialBoard)
 
-    // 3. 逐步建立中間盤面陣列
+    // 3. 組裝完整 step 序列：技巧步驟 + (若 fallback) 補上 backtrack place steps
+    const allSteps: TechniqueStep[] = [...result.steps]
+    if (result.fallbackUsed && result.solved) {
+      // 先套用所有技巧步驟，得到「技巧層用盡」的盤面
+      let postTech = initialBoard
+      for (const s of result.steps) {
+        postTech = applyStepAndUpdate(postTech, s)
+      }
+      // diff finalBoard 對 postTech，逐格補成 backtrack 步驟
+      for (let i = 0; i < 81; i++) {
+        const before = postTech.cells[i]
+        const after = result.finalBoard.cells[i]
+        if (before.value === 0 && after.value !== 0) {
+          allSteps.push({
+            technique: 'backtrack',
+            targets: [i],
+            related: [],
+            action: 'place',
+            placements: [{ index: i, value: after.value }],
+            explanation: `技巧層已無法繼續推進，由回溯演算法填入 ${after.value}`,
+          })
+        }
+      }
+    }
+
+    // 4. 逐步建立中間盤面陣列
     // boards[0] = 初始盤面，boards[i] = 套用前 i 步後的盤面
+    // 用增量更新避免抹掉 eliminate 步驟的消去結果（裸對等技巧）
     const boards: Board[] = [initialBoard]
     let current = initialBoard
-    for (const step of result.steps) {
-      current = recomputeAllCandidates(applyStep(current, step))
+    for (const step of allSteps) {
+      current = applyStepAndUpdate(current, step)
       boards.push(current)
     }
 
-    // 4. 寫入狀態（先清除播放再更新）
+    // 5. 寫入狀態（先清除播放再更新）
     _clearInterval()
     puzzle.value = p
-    steps.value = result.steps
+    steps.value = allSteps
     intermediateBoards.value = boards
     currentStepIndex.value = -1
     autoPlaying.value = false

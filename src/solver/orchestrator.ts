@@ -6,7 +6,7 @@ import type {
   TechniqueSolver,
   TechniqueStep,
 } from '@/types'
-import { setCellValue, setCandidates } from '@/core/board'
+import { setCellValue, setCandidates, getPeers } from '@/core/board'
 import { isSolved, recomputeAllCandidates } from '@/core/validator'
 import { solve as backtrackSolve } from '@/solver/backtrack'
 import { nakedSingleSolver } from '@/techniques/nakedSingle'
@@ -52,6 +52,33 @@ function applyStep(board: Board, step: TechniqueStep): Board {
       const current = new Set(next.cells[e.index].candidates)
       for (const v of e.values) current.delete(v)
       next = setCandidates(next, e.index, current)
+    }
+  }
+  return next
+}
+
+/**
+ * 套用 step 並做 **增量式** 候選更新，**不會**整盤重算（保留先前 technique 的消去結果）
+ * - place：清空目標格自身候選，並從 peer 候選中移除已放入的值
+ * - eliminate：applyStep 已完成消去，無需後處理
+ *
+ * 用途：solveWithSteps / playback 等需要連續套用多個 step 的場景。
+ * 不可用 recomputeAllCandidates 取代，否則 eliminate 步驟產生的消去會被一筆抹回。
+ */
+function applyStepAndUpdate(board: Board, step: TechniqueStep): Board {
+  let next = applyStep(board, step)
+  if (step.action === 'place' && step.placements) {
+    for (const p of step.placements) {
+      // 清空已放值格子自身候選
+      next = setCandidates(next, p.index, new Set())
+      // 從 peer 的候選中移除已放入的值
+      for (const peer of getPeers(next, p.index)) {
+        if (peer.value !== 0) continue
+        if (!peer.candidates.has(p.value)) continue
+        const newCands = new Set(peer.candidates)
+        newCands.delete(p.value)
+        next = setCandidates(next, peer.index, newCands)
+      }
     }
   }
   return next
@@ -120,8 +147,8 @@ export function solveWithSteps(board: Board): SolveResult {
     techniqueUsage[found.technique] = (techniqueUsage[found.technique] ?? 0) + 1
     steps.push(found)
 
-    // 套用 step 並重算 candidates，準備下一輪
-    current = recomputeAllCandidates(applyStep(current, found))
+    // 套用 step 並做增量更新（保留先前 eliminate 步驟的消去結果）
+    current = applyStepAndUpdate(current, found)
   }
 
   // 迭代上限保護觸發（理論不應發生）
@@ -149,6 +176,6 @@ export function nextHintStep(board: Board): TechniqueStep | null {
   return null
 }
 
-/** 暴露給其他模組（包括測試）的 applyStep helper */
-export { applyStep }
+/** 暴露給其他模組（包括測試）的 helper */
+export { applyStep, applyStepAndUpdate }
 
