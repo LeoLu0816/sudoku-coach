@@ -24,6 +24,15 @@ const techniqueNameMap: Record<TechniqueId, string> = {
   'naked-triple': '裸三',
   'pointing-pair': '指向對',
   'box-line-reduction': '區塊行列消除',
+  'hidden-triple': '隱三',
+  'naked-quad': '裸四',
+  'x-wing': 'X-Wing（雙線矩形）',
+  swordfish: 'Swordfish（劍魚）',
+  'xy-wing': 'XY-Wing（XY 樞紐）',
+  skyscraper: 'Skyscraper（摩天樓）',
+  'simple-coloring': 'Simple Coloring（單數字著色）',
+  'unique-rectangle': 'Unique Rectangle（唯一矩形）',
+  'xyz-wing': 'XYZ-Wing',
   backtrack: '暴力回溯',
 }
 

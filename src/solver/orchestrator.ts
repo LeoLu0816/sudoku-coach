@@ -110,6 +110,7 @@ export function solveWithSteps(board: Board): SolveResult {
         steps,
         techniqueUsage,
         fallbackUsed: false,
+        outOfTechniqueScope: false,
       }
     }
 
@@ -132,6 +133,7 @@ export function solveWithSteps(board: Board): SolveResult {
           steps,
           techniqueUsage,
           fallbackUsed: true,
+          outOfTechniqueScope: true,
         }
       }
       return {
@@ -140,6 +142,7 @@ export function solveWithSteps(board: Board): SolveResult {
         steps,
         techniqueUsage,
         fallbackUsed: true,
+        outOfTechniqueScope: true,
       }
     }
 
@@ -158,6 +161,7 @@ export function solveWithSteps(board: Board): SolveResult {
     steps,
     techniqueUsage,
     fallbackUsed: false,
+    outOfTechniqueScope: false,
   }
 }
 

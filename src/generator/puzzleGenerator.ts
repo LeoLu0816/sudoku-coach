@@ -25,6 +25,8 @@ const DIFFICULTY_TARGET_GIVENS: Record<Difficulty, { min: number; max: number }>
   medium: { min: 30, max: 40 },
   hard: { min: 25, max: 32 },
   expert: { min: 17, max: 28 },
+  // master 暫時複用 expert 的 givens 範圍；T61 會用「至少用到一個高階技巧」做真正分級
+  master: { min: 17, max: 26 },
 }
 
 /**

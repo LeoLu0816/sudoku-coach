@@ -92,6 +92,15 @@ const techNameMap: Record<TechniqueId, string> = {
   'naked-triple': '裸三',
   'pointing-pair': '指向對',
   'box-line-reduction': '區塊行列消除',
+  'hidden-triple': '隱三',
+  'naked-quad': '裸四',
+  'x-wing': 'X-Wing',
+  swordfish: 'Swordfish',
+  'xy-wing': 'XY-Wing',
+  skyscraper: 'Skyscraper',
+  'simple-coloring': 'Simple Coloring',
+  'unique-rectangle': 'Unique Rectangle',
+  'xyz-wing': 'XYZ-Wing',
   backtrack: '暴力回溯',
 }
 
@@ -101,6 +110,7 @@ const difficultyLabel: Record<Difficulty, string> = {
   medium: '中等',
   hard: '困難',
   expert: '專家',
+  master: '大師',
 }
 
 /** 技巧使用次數陣列（給結果區渲染） */

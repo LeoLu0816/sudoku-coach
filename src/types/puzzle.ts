@@ -2,7 +2,7 @@ import type { Board, CellValue } from './board';
 import type { TechniqueId, TechniqueStep } from './technique';
 
 /** 難度 */
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert' | 'master';
 
 /** 題目 */
 export interface Puzzle {
@@ -27,4 +27,6 @@ export interface SolveResult {
   techniqueUsage: Partial<Record<TechniqueId, number>>;
   /** 若 solver 嘗試所有技巧後仍解不出，會 fallback 到 backtrack；此 flag 標記是否使用 fallback */
   fallbackUsed: boolean;
+  /** 技巧層用盡 → fallback 才解出 → true。觀摩/分析 UI 應據此提示「此題超出技巧範圍」 */
+  outOfTechniqueScope: boolean;
 }

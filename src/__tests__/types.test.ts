@@ -87,6 +87,7 @@ describe('types', () => {
         'naked-single': 1,
       },
       fallbackUsed: false,
+      outOfTechniqueScope: false,
     }
 
     expect(result.solved).toBe(true)

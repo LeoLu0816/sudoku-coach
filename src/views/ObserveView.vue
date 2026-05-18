@@ -128,6 +128,7 @@ const difficultyLabel = computed(() => {
     medium: '中等',
     hard: '困難',
     expert: '專家',
+    master: '大師',
   }
   return puzzle.value ? map[puzzle.value.difficulty] : '未選'
 })

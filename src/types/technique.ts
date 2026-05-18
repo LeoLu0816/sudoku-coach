@@ -9,6 +9,17 @@ export type TechniqueId =
   | 'naked-triple'
   | 'pointing-pair'
   | 'box-line-reduction'
+  // Tier 1 高階
+  | 'hidden-triple'
+  | 'naked-quad'
+  | 'x-wing'
+  | 'swordfish'
+  | 'xy-wing'
+  // Tier 2 高階（5B）
+  | 'skyscraper'
+  | 'simple-coloring'
+  | 'unique-rectangle'
+  | 'xyz-wing'
   | 'backtrack';
 
 /** 技巧 metadata（顯示給使用者） */
