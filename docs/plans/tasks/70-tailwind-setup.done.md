@@ -1,7 +1,8 @@
 ---
 id: 70-tailwind-setup
 phase: P6
-status: todo
+status: done
+completed_at: 2026-05-19
 depends_on: []
 assignee: claude-code
 estimated_complexity: S
@@ -21,6 +22,8 @@ deliverables:
   - "src/main.ts"
   - "index.html"
 ---
+
+> **[DONE 2026-05-19]** Tailwind 3.4 引入完成；typecheck/test/build 全綠；視覺驗收延至 76 整合。
 
 # Task 70: Tailwind CSS 安裝與基建
 
