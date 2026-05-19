@@ -29,10 +29,14 @@ describe('user-reported puzzle: 觀摩模式卡在指向對', () => {
   })
 
   it('solveWithSteps 確認此題技巧層用盡 + fallback 解出', () => {
+    // 注意：即使 Phase 5 全部 Tier 1 + 5B 技巧（總計 9 個高階）註冊後，
+    // 此題仍需 fallback。需要更深的 AIC / ALS / Forcing Chain 才可純技巧解出，
+    // 暫定為「題目超出技巧範圍」由 outOfTechniqueScope 標示。
     const board = recomputeAllCandidates(parseBoardString(USER_PUZZLE_GIVEN))
     const result = solveWithSteps(board)
     expect(result.solved).toBe(true)
     expect(result.fallbackUsed).toBe(true)
+    expect(result.outOfTechniqueScope).toBe(true)
     expect(isSolved(result.finalBoard)).toBe(true)
   })
 

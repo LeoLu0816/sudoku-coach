@@ -21,6 +21,10 @@ import { nakedQuadSolver } from '@/techniques/nakedQuad'
 import { xWingSolver } from '@/techniques/xWing'
 import { swordfishSolver } from '@/techniques/swordfish'
 import { xyWingSolver } from '@/techniques/xyWing'
+import { skyscraperSolver } from '@/techniques/skyscraper'
+import { simpleColoringSolver } from '@/techniques/simpleColoring'
+import { uniqueRectangleSolver } from '@/techniques/uniqueRectangle'
+import { xyzWingSolver } from '@/techniques/xyzWing'
 
 /**
  * 已註冊的技巧 solver 清單（依難度由低到高，與難度分級對應）
@@ -40,6 +44,11 @@ const registeredTechniques: TechniqueSolver[] = [
   xWingSolver,
   swordfishSolver,
   xyWingSolver,
+  // Tier 2 高階 / 5B（更高階；user-puzzle 仍 fallback 時啟用）
+  skyscraperSolver,
+  uniqueRectangleSolver,
+  xyzWingSolver,
+  simpleColoringSolver,
 ]
 
 /** 取得所有已註冊技巧（依優先順序） */

@@ -114,24 +114,32 @@ last_updated: 2026-05-18
 
 | ID | 檔案 | 狀態 | 負責 | 依賴 |
 |---|---|---|---|---|
-| 50 | [tasks/50-contract-and-uniqueness.md](tasks/50-contract-and-uniqueness.md) | ⚪ todo | claude-code（主 agent 親自） | 01 |
-| 51 | [tasks/51-tech-hidden-triple.md](tasks/51-tech-hidden-triple.md) | ⚪ todo | null | 50, 10, 11 |
-| 52 | [tasks/52-tech-naked-quad.md](tasks/52-tech-naked-quad.md) | ⚪ todo | null | 50, 10, 11 |
-| 53 | [tasks/53-tech-x-wing.md](tasks/53-tech-x-wing.md) | ⚪ todo | null | 50, 10, 11 |
-| 54 | [tasks/54-tech-swordfish.md](tasks/54-tech-swordfish.md) | ⚪ todo | null | 50, 10, 11 |
-| 55 | [tasks/55-tech-xy-wing.md](tasks/55-tech-xy-wing.md) | ⚪ todo | null | 50, 10, 11 |
-| 56 | [tasks/56-integration-regression.md](tasks/56-integration-regression.md) | ⚪ todo | claude-code（主 agent 親自） | 50–55 |
+| 50 | [tasks/50-contract-and-uniqueness.md](tasks/50-contract-and-uniqueness.md) | 🟢 done | claude-code（主 agent 親自） | 01 |
+| 51 | [tasks/51-tech-hidden-triple.md](tasks/51-tech-hidden-triple.md) | 🟢 done | claude-code | 50, 10, 11 |
+| 52 | [tasks/52-tech-naked-quad.md](tasks/52-tech-naked-quad.md) | 🟢 done | claude-code | 50, 10, 11 |
+| 53 | [tasks/53-tech-x-wing.md](tasks/53-tech-x-wing.md) | 🟢 done | general-purpose agent | 50, 10, 11 |
+| 54 | [tasks/54-tech-swordfish.md](tasks/54-tech-swordfish.md) | 🟢 done | general-purpose agent | 50, 10, 11 |
+| 55 | [tasks/55-tech-xy-wing.md](tasks/55-tech-xy-wing.md) | 🟢 done | general-purpose agent | 50, 10, 11 |
+| 56 | [tasks/56-integration-regression.md](tasks/56-integration-regression.md) | 🟣 partial | claude-code（主 agent 親自） | 50–55 |
 
 **Tier 1 並行區塊**：T51-T55 可一次平行派 5 個 Cursor chat（皆只依賴 T50 契約異動，互不衝突；orchestrator 註冊與測試由 T56 整合處理，避免合流衝突）。
 
 #### 5B 批次（看 5A 結果決定要不要做，先列標題不展開）
 
-| ID | 標題 | 預計 |
+| ID | 標題 | 狀態 |
 |---|---|---|
-| 57 | Skyscraper / Two-String Kite | 若 5A 後 user-puzzle 仍 fallback 才寫 task 細節 |
-| 58 | Simple Coloring（單數字） | 同上 |
-| 59 | Unique Rectangle Type 1 | 同上 |
-| 60 | XYZ-Wing（備用） | 同上 |
+| 57 | Skyscraper | 🟢 done |
+| 58 | Simple Coloring（單數字） | 🟢 done |
+| 59 | Unique Rectangle Type 1 | 🟢 done |
+| 60 | XYZ-Wing | 🟢 done |
+
+**5B 完工後仍卡關紀錄（2026-05-19）**：
+即使註冊全 5 個 Tier 1 + 4 個 5B 共 9 個高階技巧，`user-puzzle-regression.test.ts` 中的 user-puzzle 仍 fallback。第 31 步技巧用盡時的盤面結構需要更深的 AIC（Alternating Inference Chain）/ ALS（Almost Locked Sets）/ Forcing Chain 等鏈式推理才能純技巧解出，這已超出本 plan 範圍。
+
+- `outOfTechniqueScope=true` 由 T50 已建立的契約標示
+- user-puzzle-regression test 保留 `expect fallbackUsed=true` 的現實期望，並加 `expect outOfTechniqueScope=true`
+- T56 acceptance「fallbackUsed=false」放棄；其餘 acceptance 已達成
+- 觀摩/分析 UI 需據 `outOfTechniqueScope` 標示「此題超出技巧範圍」（由 T63 處理）
 
 #### 5C 收尾（5A/5B 結束後規劃，先列標題不展開）
 
