@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import type { Board, CellIndex, CellValue, Difficulty, Puzzle, TechniqueId } from '@/types'
 import { createBoardFromGiven } from '@/core/board'
 import { useAnalyzeStore } from '@/stores/analyze'
+import { useGameStore } from '@/stores/game'
 import { usePlaybackStore } from '@/stores/playback'
 import { fixturePuzzles } from '@/fixtures'
 import PuzzleInputPanel from '@/ui/PuzzleInputPanel.vue'
@@ -22,6 +23,7 @@ import AppHeader from '@/ui/AppHeader.vue'
 
 const router = useRouter()
 const analyzeStore = useAnalyzeStore()
+const gameStore = useGameStore()
 const playbackStore = usePlaybackStore()
 
 const { result } = storeToRefs(analyzeStore)
@@ -81,22 +83,45 @@ function onLoadSample(): void {
   analyzeStore.clear()
 }
 
-/** 進入觀摩：用分析結果建 Puzzle 灌入 playback store */
-function enterObserve(): void {
+/** 由當前分析結果組裝 Puzzle；無唯一解或無輸入則回 null */
+function buildPuzzleFromResult(): Puzzle | null {
   if (!result.value?.isUnique || !result.value.solveResult || !board.value) {
-    return
+    return null
   }
-  // 從輸入 board 抽 given；從 solveResult.finalBoard 抽 solution
   const given = board.value.cells.map((c) => c.value) as CellValue[]
   const solution = result.value.solveResult.finalBoard.cells.map((c) => c.value) as CellValue[]
-  const puzzle: Puzzle = {
+  return {
     id: `analyzed-${Date.now()}`,
     difficulty: result.value.difficulty ?? 'easy',
     given,
     solution,
   }
+}
+
+/** 進入觀摩：用分析結果建 Puzzle 灌入 playback store */
+function enterObserve(): void {
+  const puzzle = buildPuzzleFromResult()
+  if (!puzzle) {
+    return
+  }
   playbackStore.loadPuzzle(puzzle)
   router.push({ name: 'observe' })
+}
+
+/** 進入遊戲：用分析結果建 Puzzle 灌入 game store；若有進行中且未解開的局先確認 */
+function enterPlay(): void {
+  const puzzle = buildPuzzleFromResult()
+  if (!puzzle) {
+    return
+  }
+  if (gameStore.puzzle && !gameStore.isSolved) {
+    const ok = window.confirm('目前有進行中的局，載入新題目會覆蓋進度，確定繼續？')
+    if (!ok) {
+      return
+    }
+  }
+  gameStore.loadPuzzle(puzzle)
+  router.push({ name: 'play' })
 }
 
 function goHome(): void {
@@ -249,13 +274,22 @@ const techniqueUsageList = computed(() => {
               </p>
             </div>
 
-            <button
-              class="mt-4 rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
-              data-testid="btn-enter-observe"
-              @click="enterObserve"
-            >
-              進入觀摩模式 →
-            </button>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button
+                class="rounded bg-emerald-600 px-5 py-2 text-white hover:bg-emerald-700"
+                data-testid="btn-enter-play"
+                @click="enterPlay"
+              >
+                進入遊戲模式 →
+              </button>
+              <button
+                class="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+                data-testid="btn-enter-observe"
+                @click="enterObserve"
+              >
+                進入觀摩模式 →
+              </button>
+            </div>
           </div>
         </div>
 
