@@ -1,7 +1,8 @@
 ---
 id: 71-shared-components
 phase: P6
-status: todo
+status: done
+completed_at: 2026-05-19
 depends_on: [70-tailwind-setup]
 assignee: claude-code
 estimated_complexity: M
@@ -18,6 +19,8 @@ deliverables:
   - "src/ui/__tests__/AppDrawer.test.ts"
   - "src/ui/__tests__/BottomBar.test.ts"
 ---
+
+> **[DONE 2026-05-19]** AppHeader / BottomBar / AppDrawer 完成；新測試 7/7 綠，typecheck 綠。
 
 # Task 71: 共用 RWD 元件（AppHeader / BottomBar / AppDrawer）
 
