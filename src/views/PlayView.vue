@@ -55,9 +55,17 @@ const hintHighlight = computed(() => {
   }
 })
 
-// 提示出現時自動打開抽屜（手機版才看得到，桌面版 aside 仍顯示）
+/** 判斷是否為手機版（< md 斷點 768px）— 用於避免桌面版多開提示抽屜 */
+function isMobileViewport(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false
+  }
+  return window.matchMedia('(max-width: 767px)').matches
+}
+
+// 提示出現時自動打開抽屜：僅手機版才開（桌面已有右側 aside 顯示提示）
 watch(currentHint, (next) => {
-  if (next) {
+  if (next && isMobileViewport()) {
     hintDrawerOpen.value = true
   }
 })
