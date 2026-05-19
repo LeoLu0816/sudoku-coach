@@ -35,6 +35,16 @@ describe('generatePuzzle', () => {
     expect(countSolutions(board, 2)).toBe(1)
   })
 
+  it('master 題：可生成（或降階 fixture fallback）且唯一解', () => {
+    // master 等級需用到 ≥1 個高階技巧才能解出。若生成 timeout，會 fallback 到 expert fixture，
+    // 此時 difficulty 仍標示 'master'。任一情況都應通過唯一解檢查。
+    const puzzle = generatePuzzle({ difficulty: 'master', seed: 7, timeoutMs: 15000 })
+    expect(puzzle.difficulty).toBe('master')
+    expect(puzzle.given).toHaveLength(81)
+    const board = createBoardFromGiven(puzzle.given)
+    expect(countSolutions(board, 2)).toBe(1)
+  })
+
   it('given 中為 0 表示空格', () => {
     const puzzle = generatePuzzle({ difficulty: 'easy', seed: 5, timeoutMs: 5000 })
     const blanks = puzzle.given.filter((v) => v === 0).length

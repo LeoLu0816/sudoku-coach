@@ -82,27 +82,43 @@ function transformSolution(rng: () => number): string {
   return board
 }
 
+/** 高階技巧（Tier 1 + Tier 2）— 用到任一即達 master 等級 */
+const ADVANCED_TECHNIQUES: TechniqueId[] = [
+  'hidden-triple',
+  'naked-quad',
+  'x-wing',
+  'swordfish',
+  'xy-wing',
+  'skyscraper',
+  'simple-coloring',
+  'unique-rectangle',
+  'xyz-wing',
+]
+
 /**
  * 判斷一個 puzzle 用 orchestrator 解的最高層級
  * - 'easy': 只用 naked-single
  * - 'medium': naked-single + hidden-single（無 fallback）
- * - 'hard'|'expert': 需要 fallback（P1 沒有中階技巧）
- *
- * 注意：P1 階段無法區分 hard / expert，因此回 'hard-or-expert'
+ * - 'master': 用到至少 1 個高階技巧（Tier 1 / Tier 2）且無 fallback
+ * - 'hard-or-expert': 需要中階技巧但未用高階，或需 fallback（P1 沒有中階技巧時的舊行為）
  */
 function classifyDifficulty(givenStr: string): Difficulty | 'hard-or-expert' {
   const board = parseBoardString(givenStr)
   const result = solveWithSteps(board)
 
-  if (!result.solved) return 'hard-or-expert' // 不可解視為高難度
+  if (!result.solved) { return 'hard-or-expert' }
 
   const usage = result.techniqueUsage
   const techniques = Object.keys(usage) as TechniqueId[]
 
-  if (result.fallbackUsed) return 'hard-or-expert'
+  if (result.fallbackUsed) { return 'hard-or-expert' }
 
-  if (techniques.every((t) => t === 'naked-single')) return 'easy'
-  if (techniques.every((t) => t === 'naked-single' || t === 'hidden-single')) return 'medium'
+  // master：用到任一高階技巧
+  const usedAdvanced = ADVANCED_TECHNIQUES.some((t) => (usage[t] ?? 0) > 0)
+  if (usedAdvanced) { return 'master' }
+
+  if (techniques.every((t) => t === 'naked-single')) { return 'easy' }
+  if (techniques.every((t) => t === 'naked-single' || t === 'hidden-single')) { return 'medium' }
 
   return 'hard-or-expert'
 }
@@ -142,7 +158,9 @@ function tryGenerate(difficulty: Difficulty, seed: number | undefined, deadline:
         (difficulty === 'easy' && classified !== 'easy') ||
         (difficulty === 'medium' && classified !== 'easy' && classified !== 'medium') ||
         ((difficulty === 'hard' || difficulty === 'expert') &&
-          classified !== 'hard-or-expert')
+          classified !== 'hard-or-expert' &&
+          classified !== 'master') ||
+        (difficulty === 'master' && classified !== 'master')
       ) {
         current[idx] = saved
         continue
@@ -158,9 +176,16 @@ function tryGenerate(difficulty: Difficulty, seed: number | undefined, deadline:
 
   // 最終驗證
   const classified = classifyDifficulty(finalGiven)
-  if (difficulty === 'easy' && classified !== 'easy') return null
-  if (difficulty === 'medium' && classified === 'hard-or-expert') return null
-  if ((difficulty === 'hard' || difficulty === 'expert') && classified !== 'hard-or-expert') return null
+  if (difficulty === 'easy' && classified !== 'easy') { return null }
+  if (difficulty === 'medium' && classified !== 'easy' && classified !== 'medium') { return null }
+  if (
+    (difficulty === 'hard' || difficulty === 'expert') &&
+    classified !== 'hard-or-expert' &&
+    classified !== 'master'
+  ) {
+    return null
+  }
+  if (difficulty === 'master' && classified !== 'master') { return null }
 
   return {
     id: `gen-${Date.now()}-${seed ?? 'r'}`,
@@ -187,15 +212,18 @@ export function generatePuzzle(opts: GenerateOptions): Puzzle {
     if (Date.now() > deadline) break
   }
 
-  // Fallback：回傳備用 fixture 題目
-  const candidates = fixturePuzzles.filter((p) => p.difficulty === opts.difficulty)
+  // Fallback：回傳備用 fixture 題目；master 沒有 fixture，退階用 expert
+  const fallbackDifficulty: Difficulty =
+    opts.difficulty === 'master' ? 'expert' : opts.difficulty
+  const candidates = fixturePuzzles.filter((p) => p.difficulty === fallbackDifficulty)
   if (candidates.length === 0) {
     throw new Error(`No fallback fixture for difficulty ${opts.difficulty}`)
   }
   const fixture = candidates[0]
   return {
     id: `fixture-fallback-${fixture.id}`,
-    difficulty: fixture.difficulty,
+    // 保持使用者請求的難度標籤（即使 fixture 來自 expert，仍標示為原請求）
+    difficulty: opts.difficulty,
     given: fixture.given.split('').map((c) => (c === '.' || c === '0' ? 0 : Number(c))) as CellValue[],
     solution: fixture.solution.split('').map((c) => Number(c)) as CellValue[],
   }

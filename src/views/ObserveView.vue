@@ -206,6 +206,7 @@ const difficultyLabel = computed(() => {
           <button data-testid="pick-medium" @click="pickDifficulty('medium')">中等</button>
           <button data-testid="pick-hard" @click="pickDifficulty('hard')">困難</button>
           <button data-testid="pick-expert" @click="pickDifficulty('expert')">專家</button>
+          <button data-testid="pick-master" @click="pickDifficulty('master')">大師</button>
         </div>
         <button v-if="puzzle" class="link-btn" @click="cancelDifficulty">取消</button>
       </div>

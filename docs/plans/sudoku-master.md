@@ -1,9 +1,9 @@
 ---
 id: sudoku-master
 title: 數獨學習工具 — 主 Plan
-version: 1.1.0
-status: planning
-last_updated: 2026-05-18
+version: 1.2.0
+status: phase-5-complete
+last_updated: 2026-05-19
 ---
 
 # 數獨學習工具 — 主 Plan
@@ -143,11 +143,11 @@ last_updated: 2026-05-18
 
 #### 5C 收尾（5A/5B 結束後規劃，先列標題不展開）
 
-| ID | 標題 | 預計 |
+| ID | 標題 | 狀態 |
 |---|---|---|
-| 61 | 'master' 難度生成器調整 | 5A/5B 完工後 |
-| 62 | Playback 技巧分類過濾/著色 UI | 5A/5B 完工後 |
-| 63 | `outOfTechniqueScope=true` 時觀摩/分析 UI 標示 | 與 56 共用 type；5C 補 UI |
+| 61 | 'master' 難度生成器調整 | 🟢 done |
+| 62 | Playback 技巧分類過濾/著色 UI | 🟢 done |
+| 63 | `outOfTechniqueScope=true` 時觀摩/分析 UI 標示 | 🟢 done |
 
 #### Phase 5 整合驗收
 - `pnpm test` 全綠
