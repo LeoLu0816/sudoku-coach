@@ -190,8 +190,8 @@ function handleKeyDown(event: KeyboardEvent): void {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(9, 1fr);
-  width: min(90vw, 90vh, 486px);
-  height: min(90vw, 90vh, 486px);
+  width: min(92vw, 560px);
+  aspect-ratio: 1;
   border: 2px solid #333;
   outline: none;
   user-select: none;
@@ -230,7 +230,7 @@ function handleKeyDown(event: KeyboardEvent): void {
    數字顯示
 ──────────────────────────────────────────────── */
 .cell-value {
-  font-size: clamp(14px, 3vw, 22px);
+  font-size: clamp(1rem, 4vw, 1.5rem);
   line-height: 1;
 }
 
@@ -289,25 +289,11 @@ function handleKeyDown(event: KeyboardEvent): void {
 }
 
 .candidate {
-  font-size: 11px;
+  font-size: clamp(8px, 1.6vw, 11px);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #666;
   line-height: 1;
-}
-
-/* ────────────────────────────────────────────────
-   響應式：小螢幕縮小字體
-──────────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .sudoku-board {
-    width: 95vw;
-    height: 95vw;
-  }
-
-  .candidate {
-    font-size: 9px;
-  }
 }
 </style>
