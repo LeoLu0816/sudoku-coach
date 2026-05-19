@@ -1,7 +1,8 @@
 ---
 id: 76-home-and-acceptance
 phase: P6
-status: todo
+status: done
+completed_at: 2026-05-19
 depends_on: [73-play-view-rwd, 74-observe-view-rwd, 75-analyze-view-rwd]
 assignee: claude-code
 estimated_complexity: S
@@ -15,6 +16,8 @@ deliverables:
   - "src/views/HomeView.vue"
   - "docs/plans/rwd-mobile.report.md（完工報告，本任務寫，且把 rwd-mobile.md 改為 rwd-mobile.done.md）"
 ---
+
+> **[DONE 2026-05-19]** HomeView Tailwind 重寫；typecheck/test(479)/build 全綠；手動視覺驗收交由使用者跑 pnpm dev。
 
 # Task 76: HomeView RWD + 整合手動驗收
 

@@ -2,10 +2,13 @@
 id: rwd-mobile
 title: RWD 自適應手機版 — 設計 Spec
 version: 1.0.0
-status: design
-last_updated: 2026-05-18
+status: done
+completed_at: 2026-05-19
+last_updated: 2026-05-19
 owner: claude-code
 ---
+
+> ✅ **完工：2026-05-19**　全 7 個子任務（70~76）done，typecheck/test(479)/build 全綠。詳見 [`rwd-mobile.report.md`](./rwd-mobile.report.md)。瀏覽器四尺寸視覺驗收待使用者於 `pnpm dev` 自行確認。
 
 # RWD 自適應手機版 — 設計 Spec
 

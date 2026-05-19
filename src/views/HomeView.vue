@@ -11,119 +11,46 @@ function goTo(name: 'play' | 'observe' | 'analyze'): void {
 </script>
 
 <template>
-  <main class="home">
-    <header class="hero">
-      <p class="eyebrow">Sudoku Learning Tool</p>
-      <h1>數獨學習工具</h1>
-      <p class="intro">在三種模式中練習解題、觀摩解法、分析任意盤面</p>
+  <main
+    class="flex min-h-screen flex-col items-center justify-center gap-9 bg-slate-50 px-4 py-8 text-slate-800 md:px-8 md:py-12"
+  >
+    <header class="max-w-2xl text-center">
+      <p class="m-0 mb-3 text-xs font-bold uppercase tracking-widest text-indigo-500">
+        Sudoku Learning Tool
+      </p>
+      <h1 class="m-0 text-3xl leading-tight md:text-5xl">數獨學習工具</h1>
+      <p class="mt-4 text-base text-slate-500 md:text-lg">
+        在三種模式中練習解題、觀摩解法、分析任意盤面
+      </p>
     </header>
 
-    <section class="modes">
-      <button class="mode-card mode-play" data-testid="mode-play" @click="goTo('play')">
-        <h2>玩</h2>
-        <p>自己解題，卡住時可呼叫提示</p>
+    <section class="grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-3">
+      <button
+        class="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        data-testid="mode-play"
+        @click="goTo('play')"
+      >
+        <h2 class="m-0 text-xl text-blue-600">玩</h2>
+        <p class="m-0 text-sm text-slate-500">自己解題，卡住時可呼叫提示</p>
       </button>
 
-      <button class="mode-card mode-observe" data-testid="mode-observe" @click="goTo('observe')">
-        <h2>觀摩學習</h2>
-        <p>看電腦逐步解題（P3 上線）</p>
+      <button
+        class="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        data-testid="mode-observe"
+        @click="goTo('observe')"
+      >
+        <h2 class="m-0 text-xl text-slate-600">觀摩學習</h2>
+        <p class="m-0 text-sm text-slate-500">看電腦逐步解題</p>
       </button>
 
-      <button class="mode-card mode-analyze" data-testid="mode-analyze" @click="goTo('analyze')">
-        <h2>分析盤面</h2>
-        <p>輸入任意盤面，分析難度與解法（P4 上線）</p>
+      <button
+        class="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+        data-testid="mode-analyze"
+        @click="goTo('analyze')"
+      >
+        <h2 class="m-0 text-xl text-slate-600">分析盤面</h2>
+        <p class="m-0 text-sm text-slate-500">輸入任意盤面，分析難度與解法</p>
       </button>
     </section>
   </main>
 </template>
-
-<style scoped>
-.home {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 36px;
-  padding: 32px;
-  background: #f6f8fb;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-  color: #1f2937;
-}
-
-.hero {
-  text-align: center;
-  max-width: 640px;
-}
-
-.eyebrow {
-  margin: 0 0 12px;
-  color: #646cff;
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-h1 {
-  margin: 0;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  line-height: 1.1;
-}
-
-.intro {
-  margin: 16px 0 0;
-  color: #476072;
-  font-size: 1.05rem;
-}
-
-.modes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  width: min(960px, 100%);
-}
-
-.mode-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 24px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  cursor: pointer;
-  text-align: left;
-  box-shadow: 0 8px 24px rgb(15 23 42 / 6%);
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.mode-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgb(15 23 42 / 10%);
-}
-
-.mode-card h2 {
-  margin: 0;
-  font-size: 1.4rem;
-  color: #1f2937;
-}
-
-.mode-card p {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.95rem;
-}
-
-.mode-play h2 {
-  color: #2563eb;
-}
-
-.mode-observe h2 {
-  color: #6b7280;
-}
-
-.mode-analyze h2 {
-  color: #6b7280;
-}
-</style>
