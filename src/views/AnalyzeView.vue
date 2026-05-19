@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import type { Board, CellIndex, CellValue, Difficulty, Puzzle, TechniqueId } from '@/types'
@@ -8,14 +8,16 @@ import { useAnalyzeStore } from '@/stores/analyze'
 import { usePlaybackStore } from '@/stores/playback'
 import { fixturePuzzles } from '@/fixtures'
 import PuzzleInputPanel from '@/ui/PuzzleInputPanel.vue'
+import AppHeader from '@/ui/AppHeader.vue'
 
 /**
- * AnalyzeView：分析模式
+ * AnalyzeView：分析模式 RWD
  * 流程：
  *  1. 玩家貼字串 / 手動點輸入 / 載入範例 → 設定 inputBoard
  *  2. 點分析 → analyzeStore.analyze(board) 判定唯一性 / 難度 / 步驟
  *  3. 唯一解 → 顯示結果（難度 + 技巧分布 + 進入觀摩按鈕）
  *  4. 進入觀摩 → 由 solveResult.finalBoard 組 Puzzle 灌入 playback store + 跳 /observe
+ *  5. 手機：Tabs 切換輸入 / 結果；桌面：上下排列
  */
 
 const router = useRouter()
@@ -27,6 +29,21 @@ const { result } = storeToRefs(analyzeStore)
 /** 元件層狀態：輸入棋盤 + 選中格 */
 const board = ref<Board | null>(null)
 const selectedIndex = ref<CellIndex | null>(null)
+
+/** 手機版 Tab：'input' | 'result'，桌面忽略此狀態（兩者皆顯示） */
+const activeTab = ref<'input' | 'result'>('input')
+
+/** 分析成功 / 失敗後自動切到結果 Tab（桌面亦切，無視覺影響） */
+watch(result, (next) => {
+  if (next && (next.isUnique || next.error)) {
+    activeTab.value = 'result'
+  }
+})
+
+/** Tab 切換 */
+function setTab(tab: 'input' | 'result'): void {
+  activeTab.value = tab
+}
 
 /** PuzzleInputPanel 事件：更新 board */
 function onUpdateBoard(next: Board): void {
@@ -47,6 +64,7 @@ function onClear(): void {
   board.value = createBoardFromGiven(new Array(81).fill(0) as CellValue[])
   selectedIndex.value = null
   analyzeStore.clear()
+  activeTab.value = 'input'
 }
 
 /** 載入範例：fixture easy-01 */
@@ -55,7 +73,9 @@ function onLoadSample(): void {
   if (!f) {
     return
   }
-  const given = f.given.split('').map((c) => (c === '.' || c === '0' ? 0 : Number(c))) as CellValue[]
+  const given = f.given
+    .split('')
+    .map((c) => (c === '.' || c === '0' ? 0 : Number(c))) as CellValue[]
   board.value = createBoardFromGiven(given)
   selectedIndex.value = null
   analyzeStore.clear()
@@ -127,210 +147,127 @@ const techniqueUsageList = computed(() => {
 </script>
 
 <template>
-  <main class="analyze">
-    <header class="header">
-      <button class="link-btn" @click="goHome">← 首頁</button>
-      <h1>分析模式</h1>
-    </header>
+  <div class="flex min-h-screen flex-col bg-slate-50 text-slate-800">
+    <AppHeader title="分析模式" @back="goHome" />
 
-    <section class="input-area">
-      <PuzzleInputPanel
-        :board="board"
-        :selected-index="selectedIndex"
-        @update:board="onUpdateBoard"
-        @select-cell="onSelectCell"
-        @analyze="onAnalyze"
-        @clear="onClear"
-        @load-sample="onLoadSample"
-      />
-    </section>
+    <!-- 手機版 Tabs：只在 < md 顯示 -->
+    <nav class="sticky top-[57px] z-[5] flex border-b border-slate-200 bg-white md:hidden">
+      <button
+        class="flex-1 py-3 text-sm"
+        :class="
+          activeTab === 'input'
+            ? 'border-b-2 border-blue-600 font-semibold text-blue-600'
+            : 'text-slate-600'
+        "
+        data-testid="tab-input"
+        @click="setTab('input')"
+      >
+        輸入
+      </button>
+      <button
+        class="flex-1 py-3 text-sm"
+        :class="
+          activeTab === 'result'
+            ? 'border-b-2 border-blue-600 font-semibold text-blue-600'
+            : 'text-slate-600'
+        "
+        data-testid="tab-result"
+        @click="setTab('result')"
+      >
+        結果
+      </button>
+    </nav>
 
-    <!-- 分析結果區 -->
-    <section v-if="result" class="result-area" data-testid="analyze-result">
-      <!-- 錯誤訊息 -->
-      <div v-if="result.error" class="result-error" data-testid="result-error">
-        <p>{{ result.error }}</p>
-      </div>
+    <main
+      class="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center gap-4 px-3 py-4 md:px-6"
+    >
+      <!-- 輸入區：手機只在 activeTab='input' 顯示；桌面永遠顯示 -->
+      <section v-show="activeTab === 'input'" class="w-full md:block">
+        <PuzzleInputPanel
+          :board="board"
+          :selected-index="selectedIndex"
+          @update:board="onUpdateBoard"
+          @select-cell="onSelectCell"
+          @analyze="onAnalyze"
+          @clear="onClear"
+          @load-sample="onLoadSample"
+        />
+      </section>
 
-      <!-- 成功分析 -->
-      <div v-else-if="result.isUnique" class="result-ok">
-        <h2>分析結果</h2>
-        <p class="result-row">
-          <span>唯一解：</span><strong>是</strong>
-        </p>
-        <p class="result-row">
-          <span>難度：</span>
-          <strong data-testid="result-difficulty">{{ result.difficulty ? difficultyLabel[result.difficulty] : '-' }}</strong>
-        </p>
-        <p class="result-row">
-          <span>解題步驟總數：</span>
-          <strong>{{ result.solveResult?.steps.length ?? 0 }}</strong>
-        </p>
-
-        <div class="usage-block">
-          <h3>使用技巧</h3>
-          <ul class="usage-list" data-testid="usage-list">
-            <li v-for="item in techniqueUsageList" :key="item.id">
-              <span>{{ item.name }}</span>
-              <span class="count">×{{ item.count }}</span>
-            </li>
-          </ul>
-          <p
-            v-if="result.solveResult?.outOfTechniqueScope"
-            class="fallback-note"
-            data-testid="out-of-technique-scope-note"
+      <!-- 結果區：手機只在 activeTab='result' 顯示；桌面永遠顯示 -->
+      <section v-show="activeTab === 'result'" class="w-full md:block">
+        <div
+          v-if="result"
+          class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          data-testid="analyze-result"
+        >
+          <div
+            v-if="result.error"
+            class="rounded-lg border border-red-300 bg-red-50 px-5 py-4 text-red-700"
+            data-testid="result-error"
           >
-            ⚠ 此題超出已實作技巧範圍：技巧層用盡後以暴力回溯（backtrack）填入剩餘格
-          </p>
+            <p class="m-0">{{ result.error }}</p>
+          </div>
+
+          <div v-else-if="result.isUnique">
+            <h2 class="m-0 mb-3 text-lg font-semibold">分析結果</h2>
+            <p class="my-1 flex gap-2">
+              <span>唯一解：</span><strong class="text-blue-700">是</strong>
+            </p>
+            <p class="my-1 flex gap-2">
+              <span>難度：</span>
+              <strong class="text-blue-700" data-testid="result-difficulty">
+                {{ result.difficulty ? difficultyLabel[result.difficulty] : '-' }}
+              </strong>
+            </p>
+            <p class="my-1 flex gap-2">
+              <span>解題步驟總數：</span>
+              <strong class="text-blue-700">{{ result.solveResult?.steps.length ?? 0 }}</strong>
+            </p>
+
+            <div class="mt-4">
+              <h3 class="mb-2 text-base font-medium text-slate-600">使用技巧</h3>
+              <ul
+                class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-1.5 p-0"
+                data-testid="usage-list"
+              >
+                <li
+                  v-for="item in techniqueUsageList"
+                  :key="item.id"
+                  class="flex items-center justify-between rounded bg-slate-100 px-3 py-1.5"
+                >
+                  <span>{{ item.name }}</span>
+                  <span class="font-semibold text-blue-600">×{{ item.count }}</span>
+                </li>
+              </ul>
+              <p
+                v-if="result.solveResult?.outOfTechniqueScope"
+                class="mt-2 text-sm text-amber-700"
+                data-testid="out-of-technique-scope-note"
+              >
+                ⚠ 此題超出已實作技巧範圍：技巧層用盡後以暴力回溯（backtrack）填入剩餘格
+              </p>
+            </div>
+
+            <button
+              class="mt-4 rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+              data-testid="btn-enter-observe"
+              @click="enterObserve"
+            >
+              進入觀摩模式 →
+            </button>
+          </div>
         </div>
 
-        <button class="primary-btn" data-testid="btn-enter-observe" @click="enterObserve">
-          進入觀摩模式 →
-        </button>
-      </div>
-    </section>
+        <div v-else class="rounded-lg bg-white px-6 py-8 text-center text-slate-500">
+          <p class="m-0">尚未分析，請回到「輸入」貼上盤面後按「分析」</p>
+        </div>
+      </section>
 
-    <section v-else class="hint">
-      <p>請貼上 81 字串、手動輸入盤面，或點「載入範例」後按「分析」</p>
-    </section>
-  </main>
+      <!-- 桌面：無 result 時的 hint（手機已有 Tab 引導） -->
+      <section v-if="!result" class="hidden w-full text-center text-slate-500 md:block">
+        <p>請貼上 81 字串、手動輸入盤面，或點「載入範例」後按「分析」</p>
+      </section>
+    </main>
+  </div>
 </template>
-
-<style scoped>
-.analyze {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: #f6f8fb;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-  color: #1f2937;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: min(960px, 100%);
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 1.4rem;
-  flex: 1;
-}
-
-.link-btn {
-  background: none;
-  border: none;
-  color: #2563eb;
-  cursor: pointer;
-  font-size: 0.95rem;
-  padding: 4px 8px;
-}
-
-.link-btn:hover {
-  text-decoration: underline;
-}
-
-.input-area {
-  width: min(960px, 100%);
-}
-
-.result-area {
-  width: min(960px, 100%);
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgb(15 23 42 / 6%);
-}
-
-.result-area h2 {
-  margin: 0 0 12px;
-  font-size: 1.2rem;
-}
-
-.result-row {
-  margin: 4px 0;
-  display: flex;
-  gap: 8px;
-}
-
-.result-row strong {
-  color: #1d4ed8;
-}
-
-.usage-block {
-  margin-top: 16px;
-}
-
-.usage-block h3 {
-  margin: 0 0 8px;
-  font-size: 1rem;
-  color: #475569;
-}
-
-.usage-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 6px;
-}
-
-.usage-list li {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 10px;
-  background: #f1f5f9;
-  border-radius: 6px;
-}
-
-.usage-list .count {
-  font-weight: 600;
-  color: #2563eb;
-}
-
-.fallback-note {
-  margin: 8px 0 0;
-  color: #b45309;
-  font-size: 0.85rem;
-}
-
-.primary-btn {
-  margin-top: 16px;
-  padding: 10px 20px;
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.primary-btn:hover {
-  background: #1d4ed8;
-}
-
-.result-error {
-  padding: 16px 20px;
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  border-radius: 8px;
-  color: #b91c1c;
-}
-
-.result-error p {
-  margin: 0;
-}
-
-.hint {
-  width: min(960px, 100%);
-  text-align: center;
-  padding: 24px;
-  color: #64748b;
-}
-</style>
