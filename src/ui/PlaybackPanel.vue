@@ -1,10 +1,44 @@
 <script setup lang="ts">
 /**
  * PlaybackPanel — 觀摩模式播放控制面板
- * 功能：步驟列表 + 上/下/播放-暫停/速度切換
- * 純 prop-driven，不持有任何狀態，所有互動透過 emit 向父元件回報
+ * 功能：步驟列表 + 上/下/播放-暫停/速度切換 + 技巧類別過濾與著色
+ * 純 prop-driven，不持有過濾 state 以外的狀態，所有互動透過 emit 向父元件回報
  */
+import { computed, ref } from 'vue'
 import type { TechniqueStep, TechniqueId } from '@/types/technique'
+
+/** 技巧類別（用於著色與過濾） */
+type TechniqueCategory = 'basic' | 'mid' | 'tier1' | 'tier2' | 'fallback'
+
+/** 技巧 → 類別對應 */
+const TECHNIQUE_CATEGORY: Record<TechniqueId, TechniqueCategory> = {
+  'naked-single': 'basic',
+  'hidden-single': 'basic',
+  'naked-pair': 'mid',
+  'hidden-pair': 'mid',
+  'naked-triple': 'mid',
+  'pointing-pair': 'mid',
+  'box-line-reduction': 'mid',
+  'hidden-triple': 'tier1',
+  'naked-quad': 'tier1',
+  'x-wing': 'tier1',
+  swordfish: 'tier1',
+  'xy-wing': 'tier1',
+  skyscraper: 'tier2',
+  'simple-coloring': 'tier2',
+  'unique-rectangle': 'tier2',
+  'xyz-wing': 'tier2',
+  backtrack: 'fallback',
+}
+
+/** 類別中文標籤 */
+const CATEGORY_LABEL: Record<TechniqueCategory, string> = {
+  basic: '基礎',
+  mid: '中階',
+  tier1: '高階',
+  tier2: '進階',
+  fallback: '回溯',
+}
 
 // Props 定義
 interface Props {
@@ -64,6 +98,43 @@ function getTechniqueName(id: TechniqueId): string {
   return techniqueNameMap[id] ?? id
 }
 
+/** 各類別是否顯示（過濾狀態，預設全顯示） */
+const visibleCategories = ref<Record<TechniqueCategory, boolean>>({
+  basic: true,
+  mid: true,
+  tier1: true,
+  tier2: true,
+  fallback: true,
+})
+
+/**
+ * 切換某類別顯示/隱藏
+ * 影響 step-item 的 CSS 顯示，不影響 currentStepIndex 邏輯
+ */
+function toggleCategory(cat: TechniqueCategory): void {
+  visibleCategories.value[cat] = !visibleCategories.value[cat]
+}
+
+/** 取得 step 的技巧類別 */
+function getStepCategory(step: TechniqueStep): TechniqueCategory {
+  return TECHNIQUE_CATEGORY[step.technique] ?? 'basic'
+}
+
+/** 此盤面實際出現過的類別（過濾選項只顯示這些，避免空項） */
+const activeCategories = computed<TechniqueCategory[]>(() => {
+  const seen = new Set<TechniqueCategory>()
+  for (const step of props.steps) {
+    seen.add(getStepCategory(step))
+  }
+  return (['basic', 'mid', 'tier1', 'tier2', 'fallback'] as TechniqueCategory[])
+    .filter((c) => seen.has(c))
+})
+
+/** 類別中文標籤公開給 template */
+function categoryLabel(cat: TechniqueCategory): string {
+  return CATEGORY_LABEL[cat]
+}
+
 /**
  * 處理播放/暫停按鈕點擊
  * autoPlaying=true → emit pause；false → emit play
@@ -86,15 +157,37 @@ function handleSpeedChange(event: Event) {
 </script>
 
 <template>
-  <!-- 觀摩面板容器：步驟列表 + 控制列 -->
+  <!-- 觀摩面板容器：類別過濾 + 步驟列表 + 控制列 -->
   <div class="playback-panel">
-    <!-- 步驟列表 -->
+    <!-- 類別過濾 checkbox 列 -->
+    <div v-if="activeCategories.length > 1" class="category-filters" data-testid="category-filters">
+      <label
+        v-for="cat in activeCategories"
+        :key="cat"
+        class="cat-filter"
+        :class="[`cat-${cat}`, { 'is-off': !visibleCategories[cat] }]"
+      >
+        <input
+          type="checkbox"
+          :checked="visibleCategories[cat]"
+          :data-testid="`cat-toggle-${cat}`"
+          @change="toggleCategory(cat)"
+        />
+        <span>{{ categoryLabel(cat) }}</span>
+      </label>
+    </div>
+
+    <!-- 步驟列表（依過濾隱藏部分項，但保留原 index） -->
     <ul class="step-list">
       <li
         v-for="(step, index) in props.steps"
+        v-show="visibleCategories[getStepCategory(step)]"
         :key="index"
         class="step-item"
-        :class="{ 'is-current': props.currentStepIndex === index }"
+        :class="[
+          `cat-${getStepCategory(step)}`,
+          { 'is-current': props.currentStepIndex === index },
+        ]"
         :data-testid="`step-${index}`"
         @click="emit('jumpTo', index)"
       >
@@ -197,11 +290,73 @@ function handleSpeedChange(event: Event) {
   background: #f9fafb;
 }
 
-/* 當前步驟高亮 */
+/* 技巧類別著色（左側 4px 邊條） */
+.step-item.cat-basic {
+  border-left: 4px solid #9ca3af;
+}
+.step-item.cat-mid {
+  border-left: 4px solid #60a5fa;
+}
+.step-item.cat-tier1 {
+  border-left: 4px solid #a78bfa;
+}
+.step-item.cat-tier2 {
+  border-left: 4px solid #f59e0b;
+}
+.step-item.cat-fallback {
+  border-left: 4px solid #ef4444;
+}
+
+/* 當前步驟高亮（覆蓋類別邊條的 background） */
 .step-item.is-current {
   background: #dbeafe;
   color: #1d4ed8;
   font-weight: 600;
+}
+
+/* 類別過濾列 */
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.cat-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.cat-filter input {
+  cursor: pointer;
+}
+
+.cat-filter.is-off {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.cat-filter.cat-basic {
+  color: #4b5563;
+}
+.cat-filter.cat-mid {
+  color: #2563eb;
+}
+.cat-filter.cat-tier1 {
+  color: #7c3aed;
+}
+.cat-filter.cat-tier2 {
+  color: #b45309;
+}
+.cat-filter.cat-fallback {
+  color: #b91c1c;
 }
 
 /* 空狀態文字 */
