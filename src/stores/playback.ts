@@ -31,6 +31,8 @@ export const usePlaybackStore = defineStore('playback', () => {
   const intermediateBoards = ref<Board[]>([])
   const autoPlaying = ref<boolean>(false)
   const speed = ref<PlaybackSpeed>('normal')
+  /** 此題技巧層用盡，必須 fallback 才能完成 → UI 標示「超出技巧範圍」 */
+  const outOfTechniqueScope = ref<boolean>(false)
 
   /** interval handle，不暴露到 store 外部 */
   let _intervalId: ReturnType<typeof setInterval> | undefined
@@ -146,6 +148,7 @@ export const usePlaybackStore = defineStore('playback', () => {
     intermediateBoards.value = boards
     currentStepIndex.value = -1
     autoPlaying.value = false
+    outOfTechniqueScope.value = result.outOfTechniqueScope
   }
 
   /** 前進一步（末步後不 overflow） */
@@ -209,6 +212,7 @@ export const usePlaybackStore = defineStore('playback', () => {
     intermediateBoards,
     autoPlaying,
     speed,
+    outOfTechniqueScope,
     // getters
     currentBoard,
     currentStep,

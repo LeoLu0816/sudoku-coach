@@ -175,8 +175,12 @@ const techniqueUsageList = computed(() => {
               <span class="count">×{{ item.count }}</span>
             </li>
           </ul>
-          <p v-if="result.solveResult?.fallbackUsed" class="fallback-note">
-            ⚠ 使用了暴力回溯（超出可解技巧範圍）
+          <p
+            v-if="result.solveResult?.outOfTechniqueScope"
+            class="fallback-note"
+            data-testid="out-of-technique-scope-note"
+          >
+            ⚠ 此題超出已實作技巧範圍：技巧層用盡後以暴力回溯（backtrack）填入剩餘格
           </p>
         </div>
 

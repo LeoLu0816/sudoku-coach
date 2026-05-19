@@ -29,6 +29,7 @@ const {
   currentStepIndex,
   autoPlaying,
   speed,
+  outOfTechniqueScope,
 } = storeToRefs(playbackStore)
 
 const currentBoard = computed(() => playbackStore.currentBoard)
@@ -150,6 +151,15 @@ const difficultyLabel = computed(() => {
       </button>
     </header>
 
+    <!-- 此題技巧層用盡，需 fallback 才能完成 → 提醒 -->
+    <div
+      v-if="currentBoard && outOfTechniqueScope"
+      class="scope-banner"
+      data-testid="out-of-technique-scope-banner"
+    >
+      此題超出已實作技巧範圍：技巧層用盡後將以暴力回溯（backtrack）填入剩餘格。
+    </div>
+
     <section v-if="currentBoard" class="layout" data-testid="observe-layout">
       <div class="board-area">
         <SudokuBoard
@@ -232,6 +242,17 @@ const difficultyLabel = computed(() => {
 .difficulty-tag {
   font-size: 0.9rem;
   color: #475569;
+}
+
+.scope-banner {
+  width: min(1100px, 100%);
+  padding: 12px 16px;
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .link-btn {
