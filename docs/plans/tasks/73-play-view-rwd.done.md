@@ -1,59 +1,74 @@
-<script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
-import type { CellIndex, CellValue, Difficulty } from '@/types'
-import { useGameStore } from '@/stores/game'
-import SudokuBoard from '@/ui/SudokuBoard.vue'
-import NumberPad from '@/ui/NumberPad.vue'
-import ControlPanel from '@/ui/ControlPanel.vue'
-import HintOverlay from '@/ui/HintOverlay.vue'
+---
+id: 73-play-view-rwd
+phase: P6
+status: done
+completed_at: 2026-05-19
+depends_on: [71-shared-components, 72-board-clamp-scaling]
+assignee: claude-code
+estimated_complexity: M
+acceptance:
+  - "PlayView 套用三層骨架（AppHeader + main + BottomBar）"
+  - "手機（< md）：HintOverlay 透過 AppDrawer 呈現，currentHint 有值時自動開抽屜"
+  - "手機：BottomBar 含 NumberPad 與「提示 / undo / redo / 鉛筆」4 顆主鍵 sticky 底部"
+  - "手機：Header 右側「⋯」按鈕開 AppDrawer，內含「新局 / 自動候選 / 檢查衝突」"
+  - "桌面（≥ md）：HintOverlay 維持右側面板，BottomBar 退化為非 sticky 排在 main 下方"
+  - "難度選擇 modal 在手機改為底部 sheet 樣式"
+  - "PlayView 既有功能（鍵盤輸入 / undo / redo / 提示 / 鉛筆）全部可用"
+  - "pnpm typecheck / pnpm test 全綠"
+deliverables:
+  - "src/views/PlayView.vue"
+---
+
+> **[DONE 2026-05-19]** 三層骨架 + 提示抽屜 + 更多動作抽屜 + sticky BottomBar；全 479 tests 綠。
+
+# Task 73: PlayView 手機版重構
+
+## 目標
+
+把 PlayView 改為 mobile-first 三層骨架；手機版以 AppDrawer 承載 HintOverlay 與「更多動作」；桌面版維持兩欄。NumberPad + 主鍵 sticky 在 BottomBar。
+
+## 變動檔案
+
+- 修改：`src/views/PlayView.vue`（template + style 大改；script 區僅新增抽屜 open 狀態與 watch）
+
+## 前置確認
+
+- [ ] **Step 1：讀現況**
+
+讀 `src/views/PlayView.vue` 全檔，確認：
+- script 區域 import / store 用法
+- template 結構（header / layout / numberpad-row / control-row / modal）
+- style 區的 class 名稱
+
+## 實作步驟
+
+### 子任務 A：script 區追加抽屜狀態
+
+- [ ] **Step 2：新增 import**
+
+於現有 import 區（最上面）加：
+
+```ts
+import { watch } from 'vue'
 import AppHeader from '@/ui/AppHeader.vue'
 import AppDrawer from '@/ui/AppDrawer.vue'
 import BottomBar from '@/ui/BottomBar.vue'
+```
 
-/**
- * PlayView：遊戲模式 RWD 整合頁
- * 流程：
- *  1. mount 時若無 board 則彈出難度選單；有 board（persistence 還原）就直接玩
- *  2. 三層骨架：AppHeader / main / BottomBar
- *  3. 手機：HintOverlay 與「更多動作」走 AppDrawer；桌面維持兩欄
- *  4. 鍵盤事件：方向鍵移格、1-9 輸入、Backspace/Delete 清除
- */
+`watch` 若 vue 那行已 import 則合併進去。
 
-const router = useRouter()
-const store = useGameStore()
-const { board, selectedIndex, pencilMode, autoCandidates, currentHint } = storeToRefs(store)
+- [ ] **Step 3：新增抽屜 open 狀態與自動開啟邏輯**
 
-// 衝突 / undo redo / 剩餘數量 / 已解開：以 computed 取 getter（避免 reactive 邊界問題）
-const conflicts = computed(() => store.conflicts)
-const canUndo = computed(() => store.canUndo)
-const canRedo = computed(() => store.canRedo)
-const remainingCounts = computed(() => store.remainingCounts)
-const isSolved = computed(() => store.isSolved)
+在 `errorBannerVisible` 宣告附近加：
 
-/** 是否顯示難度選擇彈窗 */
-const showDifficultyPicker = ref<boolean>(false)
-
-/** 是否顯示錯誤檢查訊息 */
-const errorBannerVisible = ref<boolean>(false)
-
+```ts
 /** 提示抽屜開關（手機版用，桌面版仍走 aside） */
 const hintDrawerOpen = ref<boolean>(false)
 
 /** 更多動作抽屜開關（手機版「⋯」用） */
 const moreDrawerOpen = ref<boolean>(false)
 
-/** 提示高亮（給 SudokuBoard 用） */
-const hintHighlight = computed(() => {
-  if (!currentHint.value) {
-    return null
-  }
-  return {
-    targets: currentHint.value.targets,
-    related: currentHint.value.related,
-  }
-})
+/** 難度選擇用底部 sheet 樣式（手機版用同一 modal、只是 CSS 切換） */
 
 // 提示出現時自動打開抽屜（手機版才看得到，桌面版 aside 仍顯示）
 watch(currentHint, (next) => {
@@ -61,140 +76,13 @@ watch(currentHint, (next) => {
     hintDrawerOpen.value = true
   }
 })
+```
 
-/** mount：若 store 還沒 board，預設彈難度選單 */
-onMounted(() => {
-  if (!board.value) {
-    showDifficultyPicker.value = true
-  }
-})
+- [ ] **Step 4：新增「更多動作」處理函式**
 
-/** 將鍵盤事件繫到 window，讓鍵盤輸入不需 focus 棋盤 */
-function handleWindowKey(event: KeyboardEvent): void {
-  if (!board.value || selectedIndex.value === null) {
-    return
-  }
-  routeKey(event.key)
-}
+在 `onCloseHint` 附近加：
 
-onMounted(() => {
-  window.addEventListener('keydown', handleWindowKey)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleWindowKey)
-})
-
-/** SudokuBoard emit keyInput 時走同一路徑 */
-function onBoardKey(payload: { index: CellIndex; key: string }): void {
-  routeKey(payload.key)
-}
-
-/**
- * 鍵盤輸入分派：
- *  - 方向鍵 → 移動 selectedIndex
- *  - 數字 1-9 → store.inputNumber
- *  - Backspace / Delete → store.clearCell
- */
-function routeKey(key: string): void {
-  if (selectedIndex.value === null) {
-    return
-  }
-
-  if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
-    moveSelection(key)
-    return
-  }
-
-  if (/^[1-9]$/.test(key)) {
-    store.inputNumber(Number(key) as CellValue)
-    return
-  }
-
-  if (key === 'Backspace' || key === 'Delete') {
-    store.clearCell()
-  }
-}
-
-/** 依方向鍵移動選格（邊界內 clamp） */
-function moveSelection(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
-  if (selectedIndex.value === null) {
-    return
-  }
-  const idx = selectedIndex.value
-  const row = Math.floor(idx / 9)
-  const col = idx % 9
-  let nextRow = row
-  let nextCol = col
-  if (key === 'ArrowUp') {
-    nextRow = Math.max(0, row - 1)
-  } else if (key === 'ArrowDown') {
-    nextRow = Math.min(8, row + 1)
-  } else if (key === 'ArrowLeft') {
-    nextCol = Math.max(0, col - 1)
-  } else if (key === 'ArrowRight') {
-    nextCol = Math.min(8, col + 1)
-  }
-  store.selectCell(nextRow * 9 + nextCol)
-}
-
-/** 選格（SudokuBoard 點擊） */
-function onSelectCell(index: CellIndex): void {
-  store.selectCell(index)
-}
-
-/** NumberPad 數字輸入 */
-function onNumber(value: number): void {
-  store.inputNumber(value as CellValue)
-}
-
-/** NumberPad 清除 */
-function onClear(): void {
-  store.clearCell()
-}
-
-/** ControlPanel actions */
-function onNewGame(): void {
-  showDifficultyPicker.value = true
-}
-
-function onUndo(): void {
-  store.undo()
-}
-
-function onRedo(): void {
-  store.redo()
-}
-
-function onHint(): void {
-  store.requestHint()
-}
-
-function onToggleAutoCandidates(): void {
-  store.toggleAutoCandidates()
-}
-
-/** 檢查錯誤：閃一下訊息（衝突已在棋盤上紅色顯示） */
-function onCheckErrors(): void {
-  errorBannerVisible.value = true
-  setTimeout(() => {
-    errorBannerVisible.value = false
-  }, 2000)
-}
-
-/** HintOverlay actions */
-function onApplyHint(): void {
-  store.applyHint()
-}
-
-function onNextHint(): void {
-  store.requestHint()
-}
-
-function onCloseHint(): void {
-  store.clearHint()
-}
-
+```ts
 /** 手機版「⋯」按鈕：開更多動作抽屜 */
 function openMoreActions(): void {
   moreDrawerOpen.value = true
@@ -216,40 +104,15 @@ function onCheckErrorsFromDrawer(): void {
   moreDrawerOpen.value = false
   onCheckErrors()
 }
+```
 
-/** 難度選擇：開新局 */
-function pickDifficulty(d: Difficulty): void {
-  store.newGame(d)
-  showDifficultyPicker.value = false
-}
+### 子任務 B：template 改造
 
-function cancelDifficulty(): void {
-  showDifficultyPicker.value = false
-}
+- [ ] **Step 5：替換 template 為三層骨架**
 
-/** 回首頁 */
-function goHome(): void {
-  router.push({ name: 'home' })
-}
+整段 `<template>...</template>` 替換為：
 
-/** 解完後再玩一局 */
-function playAgain(): void {
-  showDifficultyPicker.value = true
-}
-
-/** 標題顯示的難度文字 */
-const difficultyLabel = computed(() => {
-  const map: Record<Difficulty, string> = {
-    easy: '簡單',
-    medium: '中等',
-    hard: '困難',
-    expert: '專家',
-    master: '大師',
-  }
-  return store.puzzle ? map[store.puzzle.difficulty] : '未開始'
-})
-</script>
-
+```vue
 <template>
   <div class="flex min-h-screen flex-col bg-slate-50 text-slate-800">
     <!-- 上方標頭 -->
@@ -305,9 +168,7 @@ const difficultyLabel = computed(() => {
             class="rounded-md border border-orange-300 bg-orange-50 px-3 py-2 text-orange-800"
             data-testid="error-banner"
           >
-            {{
-              conflicts.length === 0 ? '目前沒有衝突' : `發現 ${conflicts.length} 處衝突（已紅色標示）`
-            }}
+            {{ conflicts.length === 0 ? '目前沒有衝突' : `發現 ${conflicts.length} 處衝突（已紅色標示）` }}
           </div>
         </div>
 
@@ -322,10 +183,7 @@ const difficultyLabel = computed(() => {
         </aside>
       </section>
 
-      <section
-        v-if="!board && !showDifficultyPicker"
-        class="flex flex-col items-center gap-3 py-12"
-      >
+      <section v-if="!board && !showDifficultyPicker" class="flex flex-col items-center gap-3 py-12">
         <p>尚未開始任何題目</p>
         <button
           class="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
@@ -416,9 +274,7 @@ const difficultyLabel = computed(() => {
         >
           🎲 新局
         </button>
-        <label
-          class="flex items-center justify-between rounded border border-slate-300 bg-white px-4 py-3"
-        >
+        <label class="flex items-center justify-between rounded border border-slate-300 bg-white px-4 py-3">
           <span>🔍 自動顯示候選數</span>
           <input
             type="checkbox"
@@ -432,7 +288,9 @@ const difficultyLabel = computed(() => {
         >
           ⚠️ 檢查衝突
         </button>
-        <p class="px-1 pt-2 text-xs text-slate-500">目前難度：{{ difficultyLabel }}</p>
+        <p class="px-1 pt-2 text-xs text-slate-500">
+          目前難度：{{ difficultyLabel }}
+        </p>
       </div>
     </AppDrawer>
 
@@ -442,7 +300,9 @@ const difficultyLabel = computed(() => {
       class="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/35 md:items-center"
       data-testid="difficulty-modal"
     >
-      <div class="w-full max-w-md rounded-t-2xl bg-white p-6 md:rounded-2xl md:p-8">
+      <div
+        class="w-full max-w-md rounded-t-2xl bg-white p-6 md:rounded-2xl md:p-8"
+      >
         <h2 class="mb-4 text-lg font-semibold">選擇難度</h2>
         <div class="grid grid-cols-2 gap-2">
           <button
@@ -473,13 +333,6 @@ const difficultyLabel = computed(() => {
           >
             專家
           </button>
-          <button
-            class="col-span-2 rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
-            data-testid="pick-master"
-            @click="pickDifficulty('master')"
-          >
-            大師
-          </button>
         </div>
         <button
           v-if="board"
@@ -492,3 +345,64 @@ const difficultyLabel = computed(() => {
     </div>
   </div>
 </template>
+```
+
+- [ ] **Step 6：移除整段 `<style scoped>...</style>`**
+
+PlayView 原本的 scoped CSS 全部以 Tailwind 取代。如果發現某些 class（如 SudokuBoard / HintOverlay 內部）仍依賴外部，那些 class 來自子元件自己的 scoped CSS，不在本檔範圍。
+
+直接刪除整段 style 區塊。
+
+### 子任務 C：驗證
+
+- [ ] **Step 7：跑 typecheck**
+
+執行：`pnpm typecheck`
+預期：PASS。若 unused import 警告，移除即可。
+
+- [ ] **Step 8：跑既有測試（PlayView 沒有專屬測試，但跑全測試確認不影響其他元件）**
+
+執行：`pnpm test`
+預期：全綠。
+
+- [ ] **Step 9：手動驗收**
+
+`pnpm dev` 啟動，逐項目測：
+
+桌面（≥ 1024）：
+- [ ] AppHeader 顯示「← 首頁」「遊戲模式」「難度：xxx」（⋯ 鈕隱藏）
+- [ ] 棋盤左、HintOverlay 右
+- [ ] BottomBar 在 main 下方，NumberPad + ControlPanel 完整顯示，不 sticky
+
+手機（375 寬）：
+- [ ] AppHeader 顯示「← 首頁」「遊戲模式」「⋯」
+- [ ] 棋盤填滿 ~92vw，HintOverlay 不顯示在右側
+- [ ] BottomBar sticky 底部，含 NumberPad + 4 顆主鍵
+- [ ] 點「💡 提示」→ Drawer 從下方滑入，看到提示卡片，點關閉或背景能關
+- [ ] 點 Header「⋯」→ Drawer 出現 3 個選項（新局 / 自動候選 / 檢查衝突）
+- [ ] 點「新局」→ 難度選擇從下方滑入（底部 sheet）
+- [ ] Undo / Redo / 鉛筆 按鈕能用，狀態（鉛筆 highlight）正確
+- [ ] 解開棋盤 → solved-banner 顯示「再來一局」可用
+
+- [ ] **Step 10：commit**
+
+```bash
+git add src/views/PlayView.vue
+git commit -m "feat(views): PlayView 手機 RWD 重構（三層骨架 + 提示抽屜 + sticky BottomBar）[73-play-view-rwd]"
+```
+
+## 完工條件
+
+- [ ] PlayView 結構為三層（AppHeader / main / BottomBar）
+- [ ] 手機版 HintOverlay 透過 AppDrawer 呈現，currentHint 有值自動開
+- [ ] 手機版「⋯」抽屜含 3 個更多動作
+- [ ] 桌面版維持兩欄 + ControlPanel 完整顯示
+- [ ] 難度選擇 modal 手機為底部 sheet
+- [ ] `pnpm typecheck` + `pnpm test` 全綠
+- [ ] 手動驗收手機 / 桌面通過
+
+## 設計決策備註
+
+- 手機 BottomBar 內 4 顆主鍵直接寫死在 PlayView，不沿用 ControlPanel：因 ControlPanel 元件有自己的 scoped 樣式不易在 BottomBar 內排成 4 顆 inline、且 NumberPad 已單獨在 BottomBar 內
+- HintOverlay 在桌面用 aside 顯示、手機用 Drawer 顯示：透過 `hidden md:block` / `<AppDrawer>` 分流，**渲染兩個實例**。可接受重複，避免條件渲染複雜化（HintOverlay 是 prop-driven 純展示元件，無內部狀態）
+- 難度選擇沒改用 AppDrawer：因它需「桌面置中、手機底部 sheet」雙形態，AppDrawer 目前固定底部；直接用 inline div + Tailwind 切換更直觀
