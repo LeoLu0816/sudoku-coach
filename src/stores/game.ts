@@ -8,7 +8,7 @@ import {
 } from '@/core/board'
 import { findConflicts, isSolved as boardIsSolved, recomputeAllCandidates } from '@/core/validator'
 import { generatePuzzle } from '@/generator/puzzleGenerator'
-import { applyStep, nextHintStep } from '@/solver/orchestrator'
+import { applyStepAndUpdate, nextHintStep } from '@/solver/orchestrator'
 
 /** 遊戲狀態 */
 export interface GameState {
@@ -230,11 +230,25 @@ export const useGameStore = defineStore('game', {
       this.currentHint = nextHintStep(this.board)
     },
 
-    /** 套用當前 hint */
+    /**
+     * 套用當前 hint
+     * 流程：
+     *   1. eliminate 類技巧（naked pair / x-wing 等）只動候選；若使用者沒開自動候選 → 棋盤上看不到任何變化（畫面像沒反應）。
+     *      → 先 recomputeAllCandidates 補上完整候選，再套用 eliminate，並自動開啟 autoCandidates 讓使用者看到結果。
+     *   2. 使用 applyStepAndUpdate 做「增量」更新，**不可** 用 recomputeAllCandidates 取代整盤重算，否則 eliminate 步驟剛消去的候選會被一筆抹回（這正是原本套用裸對沒反應的原因）。
+     */
     applyHint(): void {
       if (!this.board || !this.currentHint) return
-      const next = applyStep(this.board, this.currentHint)
-      this._pushChange(this.autoCandidates ? recomputeAllCandidates(next) : next)
+      const step = this.currentHint
+
+      // eliminate 類技巧若候選未顯示，使用者看不到效果 → 自動補上全候選並開啟自動候選
+      if (step.action === 'eliminate' && !this.autoCandidates) {
+        this.autoCandidates = true
+        this.board = recomputeAllCandidates(this.board)
+      }
+
+      const next = applyStepAndUpdate(this.board, step)
+      this._pushChange(next)
     },
 
     clearHint(): void {
