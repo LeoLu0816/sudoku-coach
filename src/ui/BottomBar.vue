@@ -6,7 +6,7 @@
 <template>
   <div
     data-testid="bottom-bar"
-    class="sticky bottom-0 z-10 border-t border-slate-200 bg-white px-3 py-2 md:static md:border-0 md:bg-transparent md:px-0 md:py-0"
+    class="sticky bottom-0 z-10 border-t border-slate-200/70 bg-white/95 px-3 py-3 shadow-[0_-4px_16px_-4px_rgba(15,23,42,0.1)] backdrop-blur-lg md:static md:border-0 md:bg-transparent md:px-0 md:py-0 md:shadow-none md:backdrop-blur-none"
   >
     <slot />
   </div>

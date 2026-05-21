@@ -83,56 +83,71 @@ function handleTogglePencil(): void {
   user-select: none;
 }
 
-/* 數字按鈕橫排，小螢幕可換行 */
+/* 數字按鈕橫排：固定一列 9 顆，自動分配寬度與間距 */
 .number-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
+  flex-wrap: nowrap;
+  gap: clamp(2px, 0.8vw, 8px);
+  justify-content: stretch;
+  width: 100%;
 }
 
-/* 單一數字按鈕 */
+/* 單一數字按鈕：flex: 1 平分寬度，高度與字體跟著放大 */
 .number-btn {
   position: relative;
   display: flex;
+  flex: 1 1 0;
+  min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 56px;
-  font-size: 1.25rem;
-  font-weight: 600;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #fff;
+  height: clamp(56px, 9vw, 72px);
+  font-size: clamp(1.4rem, 3.2vw, 1.9rem);
+  font-weight: 700;
+  color: #1e3a8a;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
   cursor: pointer;
-  transition: background 0.15s;
+  box-shadow:
+    0 2px 0 0 #94a3b8,
+    0 4px 8px -2px rgba(15, 23, 42, 0.15);
+  transition:
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out,
+    background 0.15s ease-out;
 }
 
 .number-btn:hover:not(:disabled) {
-  background: #e8f0fe;
+  background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
 }
 
 .number-btn:active:not(:disabled) {
-  background: #c5d8fb;
+  transform: translateY(2px);
+  box-shadow:
+    0 0 0 0 #94a3b8,
+    inset 0 2px 4px rgba(15, 23, 42, 0.2);
+  background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
 }
 
 /* 剩餘數量小字（底部） */
 .count {
-  font-size: 0.65rem;
+  font-size: clamp(0.65rem, 1.2vw, 0.8rem);
   font-weight: 400;
   color: #666;
   line-height: 1;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 /* 已填滿（剩 0）的按鈕灰化 */
 .number-btn.is-exhausted,
 .number-btn:disabled {
-  color: #bbb;
-  border-color: #e0e0e0;
-  background: #f5f5f5;
+  color: #cbd5e1;
+  border-color: #e2e8f0;
+  background: #f1f5f9;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: translateY(2px);
 }
 
 .number-btn.is-exhausted .count {
@@ -146,31 +161,57 @@ function handleTogglePencil(): void {
   justify-content: center;
 }
 
-/* 清除與鉛筆按鈕共用底色 */
+/* 清除與鉛筆按鈕共用立體樣式 */
 .clear-btn,
 .pencil-btn {
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #fff;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
   cursor: pointer;
-  transition: background 0.15s;
+  box-shadow:
+    0 2px 0 0 #94a3b8,
+    0 4px 8px -2px rgba(15, 23, 42, 0.15);
+  transition:
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out,
+    background 0.15s ease-out;
 }
 
 .clear-btn:hover,
 .pencil-btn:hover {
-  background: #f0f0f0;
+  background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
 }
 
-/* 鉛筆模式啟用狀態 */
+.clear-btn:active,
+.pencil-btn:not(.is-active):active {
+  transform: translateY(2px);
+  box-shadow:
+    0 0 0 0 #94a3b8,
+    inset 0 2px 4px rgba(15, 23, 42, 0.2);
+}
+
+/* 鉛筆模式啟用狀態：綠色立體 + 凹陷感（持續按下） */
 .pencil-btn.is-active {
-  background: #4caf50;
   color: #fff;
-  border-color: #388e3c;
+  border-color: #15803d;
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+  box-shadow:
+    0 2px 0 0 #15803d,
+    0 4px 8px -2px rgba(21, 128, 61, 0.4);
 }
 
 .pencil-btn.is-active:hover {
-  background: #43a047;
+  background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+}
+
+.pencil-btn.is-active:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 0 0 0 #15803d,
+    inset 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 </style>

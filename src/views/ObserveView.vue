@@ -140,7 +140,7 @@ const difficultyLabel = computed(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-slate-50 text-slate-800">
+  <div class="flex min-h-screen flex-col text-slate-800">
     <AppHeader title="觀摩模式" @back="goHome">
       <template #actions>
         <span class="hidden text-sm text-slate-600 sm:inline">難度：{{ difficultyLabel }}</span>
@@ -277,42 +277,36 @@ const difficultyLabel = computed(() => {
     <!-- 難度選擇 modal：手機底部 sheet、桌面置中 -->
     <div
       v-if="showDifficultyPicker"
-      class="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/35 md:items-center"
+      class="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/50 backdrop-blur-sm md:items-center"
       data-testid="difficulty-modal"
     >
-      <div class="w-full max-w-md rounded-t-2xl bg-white p-6 md:rounded-2xl md:p-8">
-        <h2 class="mb-4 text-lg font-semibold">選擇難度</h2>
-        <div class="grid grid-cols-2 gap-2">
-          <button
-            class="rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
-            data-testid="pick-easy"
-            @click="pickDifficulty('easy')"
-          >
+      <div
+        class="game-card w-full max-w-md rounded-t-3xl border-slate-200 p-6 md:rounded-3xl md:p-8"
+      >
+        <h2 class="mb-5 text-xl font-bold text-slate-800">🎯 選擇難度</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="diff-btn diff-easy" data-testid="pick-easy" @click="pickDifficulty('easy')">
             簡單
           </button>
           <button
-            class="rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
+            class="diff-btn diff-medium"
             data-testid="pick-medium"
             @click="pickDifficulty('medium')"
           >
             中等
           </button>
-          <button
-            class="rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
-            data-testid="pick-hard"
-            @click="pickDifficulty('hard')"
-          >
+          <button class="diff-btn diff-hard" data-testid="pick-hard" @click="pickDifficulty('hard')">
             困難
           </button>
           <button
-            class="rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
+            class="diff-btn diff-expert"
             data-testid="pick-expert"
             @click="pickDifficulty('expert')"
           >
             專家
           </button>
           <button
-            class="col-span-2 rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
+            class="diff-btn diff-master col-span-2"
             data-testid="pick-master"
             @click="pickDifficulty('master')"
           >
@@ -321,7 +315,7 @@ const difficultyLabel = computed(() => {
         </div>
         <button
           v-if="puzzle"
-          class="mt-4 w-full rounded px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+          class="mt-5 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
           @click="cancelDifficulty"
         >
           取消

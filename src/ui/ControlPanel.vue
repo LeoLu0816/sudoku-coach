@@ -134,57 +134,70 @@ function handleRedo() {
   flex-wrap: wrap;
 }
 
-/* 基礎按鈕樣式 */
+/* 基礎按鈕樣式：立體陰影 + 漸層 */
 .ctrl-btn {
-  padding: 6px 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
+  padding: 8px 16px;
   font-size: 14px;
-  transition: background 0.15s, color 0.15s, opacity 0.15s;
+  font-weight: 600;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  cursor: pointer;
+  box-shadow:
+    0 2px 0 0 #94a3b8,
+    0 4px 8px -2px rgba(15, 23, 42, 0.12);
+  transition:
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out,
+    background 0.15s ease-out;
 }
 
 .ctrl-btn:hover:not(:disabled) {
-  background: #f0f0f0;
+  background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
 }
 
-/* 可用狀態（undo / redo 可用時）：藍色邊框與文字 */
-.ctrl-btn:not(.is-disabled):not(.is-emphasis):not(.is-active) {
-  color: #333;
+.ctrl-btn:not(:disabled):not(.is-disabled):active {
+  transform: translateY(2px);
+  box-shadow:
+    0 0 0 0 #94a3b8,
+    inset 0 2px 4px rgba(15, 23, 42, 0.2);
 }
 
-/* undo / redo 可用時藍色 */
+/* undo / redo 可用時藍字 */
 button[data-testid='btn-undo']:not(.is-disabled),
 button[data-testid='btn-redo']:not(.is-disabled) {
   color: #2563eb;
-  border-color: #2563eb;
 }
 
 /* disabled 狀態 */
 .ctrl-btn.is-disabled,
 .ctrl-btn:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
-  color: #999;
-  border-color: #ddd;
+  color: #94a3b8;
+  background: #f1f5f9;
+  box-shadow: none;
+  transform: translateY(2px);
 }
 
 /* 強調色：橘黃（提示按鈕） */
 .ctrl-btn.is-emphasis {
-  background: #f59e0b;
-  border-color: #d97706;
   color: #fff;
+  border-color: #b45309;
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow:
+    0 2px 0 0 #b45309,
+    0 4px 8px -2px rgba(180, 83, 9, 0.4);
 }
 
-.ctrl-btn.is-emphasis:hover {
-  background: #d97706;
+.ctrl-btn.is-emphasis:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fcd34d 0%, #fbbf24 100%);
 }
 
-/* 啟用狀態（自動候選開啟） */
-.ctrl-btn.is-active {
-  background: #dbeafe;
-  border-color: #2563eb;
-  color: #1d4ed8;
+.ctrl-btn.is-emphasis:not(:disabled):active {
+  box-shadow:
+    0 0 0 0 #b45309,
+    inset 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 </style>

@@ -45,6 +45,17 @@ function getTechniqueName(id: TechniqueId): string {
 <template>
   <!-- 提示面板：卡片樣式，prop-driven，不持有任何棋盤狀態 -->
   <div class="hint-overlay">
+    <!-- 右上角 ✕ 關閉鈕（與「關閉」按鈕走同一個 emit） -->
+    <button
+      type="button"
+      class="hint-close"
+      data-testid="hint-close-x"
+      aria-label="關閉"
+      @click="emit('close')"
+    >
+      ✕
+    </button>
+
     <!-- 有提示步驟時的完整內容 -->
     <template v-if="props.step !== null">
       <!-- 標頭：技巧中文名 + 副標 -->
@@ -88,22 +99,49 @@ function getTechniqueName(id: TechniqueId): string {
 </template>
 
 <style scoped>
-/* 提示面板容器：輕量卡片 */
+/* 提示面板容器：浮起卡片；寬度填滿父容器，desktop 由 PlayView aside 限制最大寬度 */
 .hint-overlay {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 16px 20px;
-  max-width: 360px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 8px 24px -8px rgba(15, 23, 42, 0.2), 0 2px 6px rgba(15, 23, 42, 0.06);
 }
 
-/* 標頭區：中文名 + 副標並列 */
+/* 右上角浮動 ✕ 關閉鈕 */
+.hint-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.hint-close:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* 標頭區：中文名 + 副標並列；右側預留空間給 ✕ 關閉鈕 */
 .hint-header {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  padding-right: 36px;
 }
 
 .technique-name {
@@ -132,40 +170,76 @@ function getTechniqueName(id: TechniqueId): string {
   margin: 0 0 14px;
 }
 
-/* 按鈕群組 */
+/* 按鈕群組：三顆按鈕等寬填滿一列 */
 .hint-actions {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .btn {
-  padding: 6px 14px;
-  border-radius: 6px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 9px 8px;
+  border-radius: 10px;
   border: 1px solid transparent;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition:
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out,
+    background 0.15s ease-out;
 }
 
-.btn:hover {
-  opacity: 0.85;
-}
-
+/* 套用：藍色（主動作） */
 .btn-apply {
-  background: #2563eb;
-  color: #ffffff;
+  color: #fff;
+  border-color: #1e40af;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 2px 0 0 #1e40af, 0 4px 8px -2px rgba(29, 78, 216, 0.4);
 }
 
+.btn-apply:hover {
+  background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+}
+
+.btn-apply:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 #1e40af, inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* 下一個：綠色（前進） */
 .btn-next {
-  background: #f3f4f6;
-  color: #374151;
-  border-color: #d1d5db;
+  color: #fff;
+  border-color: #047857;
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 2px 0 0 #047857, 0 4px 8px -2px rgba(5, 150, 105, 0.4);
 }
 
+.btn-next:hover {
+  background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+}
+
+.btn-next:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 #047857, inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* 關閉：橘黃色（離開動作） */
 .btn-close {
-  background: #f3f4f6;
-  color: #374151;
-  border-color: #d1d5db;
+  color: #fff;
+  border-color: #b45309;
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 2px 0 0 #b45309, 0 4px 8px -2px rgba(180, 83, 9, 0.4);
+}
+
+.btn-close:hover {
+  background: linear-gradient(180deg, #fcd34d 0%, #fbbf24 100%);
+}
+
+.btn-close:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 #b45309, inset 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 </style>

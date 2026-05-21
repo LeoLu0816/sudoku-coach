@@ -290,7 +290,7 @@ const difficultyLabel = computed(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-slate-50 text-slate-800">
+  <div class="flex min-h-screen flex-col text-slate-800">
     <!-- 上方標頭 -->
     <AppHeader title="遊戲模式" @back="goHome">
       <template #actions>
@@ -316,15 +316,15 @@ const difficultyLabel = computed(() => {
         <div class="flex flex-col items-center gap-3">
           <!-- 錯誤次數狀態列：放在棋盤上方 -->
           <div
-            class="flex w-full max-w-[560px] items-center justify-between text-sm text-slate-600"
+            class="game-card flex w-full max-w-[560px] items-center justify-between px-4 py-2 text-sm font-semibold text-slate-700"
             data-testid="game-status-bar"
           >
-            <span>難度：{{ difficultyLabel }}</span>
+            <span>難度：<span class="text-blue-600">{{ difficultyLabel }}</span></span>
             <span
-              :class="errorCount > 0 ? 'font-semibold text-red-600' : ''"
+              :class="errorCount > 0 ? 'text-rose-600' : 'text-slate-500'"
               data-testid="error-count"
             >
-              ❌ 錯誤：{{ errorCount }} 次
+              ❌ 錯誤：<span class="text-base">{{ errorCount }}</span> 次
             </span>
           </div>
 
@@ -341,12 +341,12 @@ const difficultyLabel = computed(() => {
 
           <div
             v-if="isSolved"
-            class="flex items-center gap-3 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3"
+            class="game-card flex animate-pulse items-center gap-3 border-emerald-300 bg-gradient-to-b from-emerald-50 to-emerald-100 px-5 py-4"
             data-testid="solved-banner"
           >
-            <p class="m-0 font-semibold text-emerald-700">🎉 恭喜，你解開了！</p>
+            <p class="m-0 text-lg font-bold text-emerald-700">🎉 恭喜，你解開了！</p>
             <button
-              class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              class="game-btn game-btn-primary px-5 py-2 text-sm"
               data-testid="btn-play-again"
               @click="playAgain"
             >
@@ -356,7 +356,7 @@ const difficultyLabel = computed(() => {
 
           <div
             v-if="errorBannerVisible"
-            class="rounded-md border border-orange-300 bg-orange-50 px-3 py-2 text-orange-800"
+            class="game-card border-orange-300 bg-gradient-to-b from-orange-50 to-orange-100 px-4 py-2 text-sm text-orange-800"
             data-testid="error-banner"
           >
             {{
@@ -366,7 +366,7 @@ const difficultyLabel = computed(() => {
         </div>
 
         <!-- 桌面：右側提示面板 -->
-        <aside class="hidden md:block md:min-w-[280px]">
+        <aside class="hidden md:block md:min-w-[280px] md:max-w-[360px]">
           <HintOverlay
             :step="currentHint"
             @apply="onApplyHint"
@@ -416,27 +416,27 @@ const difficultyLabel = computed(() => {
         </div>
         <div class="flex justify-between gap-2 md:hidden">
           <button
-            class="flex-1 rounded border border-slate-300 bg-white py-2 text-sm disabled:opacity-50"
+            class="game-btn flex-1 px-2 py-2 text-sm"
             :disabled="!canUndo"
             @click="onUndo"
           >
             ↶ Undo
           </button>
           <button
-            class="flex-1 rounded border border-slate-300 bg-white py-2 text-sm disabled:opacity-50"
+            class="game-btn flex-1 px-2 py-2 text-sm"
             :disabled="!canRedo"
             @click="onRedo"
           >
             ↷ Redo
           </button>
           <button
-            class="flex-1 rounded border border-slate-300 bg-white py-2 text-sm"
+            class="game-btn game-btn-emphasis flex-1 px-2 py-2 text-sm"
             @click="onHint"
           >
             💡 提示
           </button>
           <button
-            class="flex-1 rounded border border-slate-300 bg-white py-2 text-sm disabled:opacity-50"
+            class="game-btn game-btn-danger flex-1 px-2 py-2 text-sm"
             data-testid="btn-clear-wrong"
             :disabled="wrongCells.length === 0"
             @click="onClearWrong"
@@ -447,8 +447,8 @@ const difficultyLabel = computed(() => {
       </div>
     </BottomBar>
 
-    <!-- 手機版提示抽屜 -->
-    <AppDrawer v-model:open="hintDrawerOpen" title="提示">
+    <!-- 手機版提示抽屜：透明背景 + bare 模式，HintOverlay 卡片直接作為主體，無雙層 chrome -->
+    <AppDrawer v-model:open="hintDrawerOpen" transparent-backdrop bare>
       <HintOverlay
         :step="currentHint"
         @apply="onApplyHint"
@@ -464,76 +464,67 @@ const difficultyLabel = computed(() => {
 
     <!-- 手機版「更多動作」抽屜 -->
     <AppDrawer v-model:open="moreDrawerOpen" title="更多動作">
-      <div class="flex flex-col gap-2">
-        <button
-          class="rounded border border-slate-300 bg-white px-4 py-3 text-left"
-          @click="onNewGameFromDrawer"
-        >
+      <div class="flex flex-col gap-3">
+        <button class="game-btn justify-start px-4 py-3 text-left" @click="onNewGameFromDrawer">
           🎲 新局
         </button>
         <button
-          class="rounded border border-slate-300 bg-white px-4 py-3 text-left"
+          class="game-btn justify-start px-4 py-3 text-left"
           data-testid="btn-fill-candidates-drawer"
           @click="onFillCandidatesFromDrawer"
         >
           🔍 自動填入候選
         </button>
         <button
-          class="rounded border border-slate-300 bg-white px-4 py-3 text-left"
+          class="game-btn justify-start px-4 py-3 text-left"
           data-testid="btn-clear-candidates-drawer"
           @click="onClearCandidatesFromDrawer"
         >
           🧽 移除所有鉛筆
         </button>
         <button
-          class="rounded border border-slate-300 bg-white px-4 py-3 text-left"
+          class="game-btn game-btn-emphasis justify-start px-4 py-3 text-left"
           @click="onCheckErrorsFromDrawer"
         >
           ⚠️ 檢查衝突
         </button>
-        <p class="px-1 pt-2 text-xs text-slate-500">目前難度：{{ difficultyLabel }}</p>
+        <p class="px-1 pt-1 text-xs text-slate-500">目前難度：{{ difficultyLabel }}</p>
       </div>
     </AppDrawer>
 
     <!-- 難度選擇：手機底部 sheet、桌面置中卡片 -->
     <div
       v-if="showDifficultyPicker"
-      class="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/35 md:items-center"
+      class="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/50 backdrop-blur-sm md:items-center"
       data-testid="difficulty-modal"
     >
-      <div class="w-full max-w-md rounded-t-2xl bg-white p-6 md:rounded-2xl md:p-8">
-        <h2 class="mb-4 text-lg font-semibold">選擇難度</h2>
-        <div class="grid grid-cols-2 gap-2">
-          <button
-            class="rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
-            data-testid="pick-easy"
-            @click="pickDifficulty('easy')"
-          >
+      <div
+        class="game-card w-full max-w-md rounded-t-3xl border-slate-200 p-6 md:rounded-3xl md:p-8"
+      >
+        <h2 class="mb-5 text-xl font-bold text-slate-800">🎯 選擇難度</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="diff-btn diff-easy" data-testid="pick-easy" @click="pickDifficulty('easy')">
             簡單
           </button>
           <button
-            class="rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
+            class="diff-btn diff-medium"
             data-testid="pick-medium"
             @click="pickDifficulty('medium')"
           >
             中等
           </button>
-          <button
-            class="rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
-            data-testid="pick-hard"
-            @click="pickDifficulty('hard')"
-          >
+          <button class="diff-btn diff-hard" data-testid="pick-hard" @click="pickDifficulty('hard')">
             困難
           </button>
           <button
-            class="rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
+            class="diff-btn diff-expert"
             data-testid="pick-expert"
             @click="pickDifficulty('expert')"
           >
             專家
           </button>
           <button
-            class="col-span-2 rounded border border-slate-300 bg-white px-4 py-3 hover:bg-slate-50"
+            class="diff-btn diff-master col-span-2"
             data-testid="pick-master"
             @click="pickDifficulty('master')"
           >
@@ -542,7 +533,7 @@ const difficultyLabel = computed(() => {
         </div>
         <button
           v-if="board"
-          class="mt-4 w-full rounded px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+          class="mt-5 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
           @click="cancelDifficulty"
         >
           取消

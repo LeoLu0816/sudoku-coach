@@ -1,3 +1,176 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ────────────────────────────────────────────────
+   全域遊戲化基底樣式
+──────────────────────────────────────────────── */
+@layer base {
+  html,
+  body {
+    /* 防止行動裝置雙擊縮放與長按選取造成的雜訊 */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: #1e293b;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Noto Sans TC', sans-serif;
+  }
+
+  /* 所有按鈕統一的觸感：按下立即回饋、不顯示 iOS 灰底 */
+  button {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition:
+      transform 0.08s ease-out,
+      box-shadow 0.12s ease-out,
+      background-color 0.15s ease-out,
+      opacity 0.15s ease-out;
+  }
+
+  button:not(:disabled):active {
+    transform: translateY(1px) scale(0.98);
+  }
+}
+
+/* ────────────────────────────────────────────────
+   遊戲風按鈕 utility class
+   套用後具備：陰影 / 漸層 / 按下凹陷 / hover 浮起
+──────────────────────────────────────────────── */
+@layer components {
+  .game-btn {
+    @apply relative inline-flex select-none items-center justify-center rounded-xl border border-slate-300 bg-gradient-to-b from-white to-slate-100 px-4 py-2 font-semibold text-slate-700 shadow-[0_2px_0_0_#cbd5e1,0_4px_8px_-2px_rgba(15,23,42,0.12)];
+  }
+  .game-btn:hover:not(:disabled) {
+    @apply from-slate-50 to-slate-200;
+  }
+  .game-btn:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#cbd5e1,inset_0_2px_4px_rgba(15,23,42,0.15)];
+    transform: translateY(2px);
+  }
+  .game-btn:disabled {
+    @apply cursor-not-allowed opacity-50 shadow-none;
+  }
+
+  /* 主色變體（藍） */
+  .game-btn-primary {
+    @apply border-blue-700 bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-[0_2px_0_0_#1e40af,0_4px_8px_-2px_rgba(29,78,216,0.4)];
+  }
+  .game-btn-primary:hover:not(:disabled) {
+    @apply from-blue-400 to-blue-500;
+  }
+  .game-btn-primary:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#1e40af,inset_0_2px_4px_rgba(0,0,0,0.25)];
+  }
+
+  /* 強調色變體（橘） — 提示按鈕用 */
+  .game-btn-emphasis {
+    @apply border-amber-600 bg-gradient-to-b from-amber-400 to-amber-500 text-white shadow-[0_2px_0_0_#b45309,0_4px_8px_-2px_rgba(180,83,9,0.4)];
+  }
+  .game-btn-emphasis:hover:not(:disabled) {
+    @apply from-amber-300 to-amber-400;
+  }
+  .game-btn-emphasis:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#b45309,inset_0_2px_4px_rgba(0,0,0,0.25)];
+  }
+
+  /* 成功色變體（綠） */
+  .game-btn-success {
+    @apply border-emerald-700 bg-gradient-to-b from-emerald-500 to-emerald-600 text-white shadow-[0_2px_0_0_#047857,0_4px_8px_-2px_rgba(5,150,105,0.4)];
+  }
+  .game-btn-success:hover:not(:disabled) {
+    @apply from-emerald-400 to-emerald-500;
+  }
+  .game-btn-success:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#047857,inset_0_2px_4px_rgba(0,0,0,0.25)];
+  }
+
+  /* 危險色變體（紅） */
+  .game-btn-danger {
+    @apply border-rose-700 bg-gradient-to-b from-rose-500 to-rose-600 text-white shadow-[0_2px_0_0_#9f1239,0_4px_8px_-2px_rgba(190,18,60,0.4)];
+  }
+  .game-btn-danger:hover:not(:disabled) {
+    @apply from-rose-400 to-rose-500;
+  }
+  .game-btn-danger:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#9f1239,inset_0_2px_4px_rgba(0,0,0,0.25)];
+  }
+
+  /* 卡片風格：用於 HintOverlay / 結果卡 */
+  .game-card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_-4px_rgba(15,23,42,0.15)];
+  }
+
+  /* ────────────────────────────────────────────────
+     難度按鈕：低飽和漸層，由易到難色相依序加深
+     ──────────────────────────────────────────────── */
+  .diff-btn {
+    @apply relative inline-flex select-none items-center justify-center rounded-xl border px-4 py-3 font-semibold transition;
+    transition:
+      transform 0.08s ease-out,
+      box-shadow 0.12s ease-out,
+      background 0.15s ease-out;
+  }
+  .diff-btn:not(:disabled):active {
+    transform: translateY(2px);
+  }
+
+  /* 簡單：薄荷綠 */
+  .diff-easy {
+    @apply border-teal-300 bg-gradient-to-b from-teal-50 to-teal-100 text-teal-800 shadow-[0_2px_0_0_#5eead4,0_4px_8px_-2px_rgba(20,184,166,0.18)];
+  }
+  .diff-easy:hover:not(:disabled) {
+    @apply from-teal-100 to-teal-200;
+  }
+  .diff-easy:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#5eead4,inset_0_2px_4px_rgba(20,184,166,0.2)];
+  }
+
+  /* 中等：天藍 */
+  .diff-medium {
+    @apply border-sky-300 bg-gradient-to-b from-sky-50 to-sky-100 text-sky-800 shadow-[0_2px_0_0_#7dd3fc,0_4px_8px_-2px_rgba(14,165,233,0.18)];
+  }
+  .diff-medium:hover:not(:disabled) {
+    @apply from-sky-100 to-sky-200;
+  }
+  .diff-medium:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#7dd3fc,inset_0_2px_4px_rgba(14,165,233,0.2)];
+  }
+
+  /* 困難：紫藍 */
+  .diff-hard {
+    @apply border-indigo-300 bg-gradient-to-b from-indigo-50 to-indigo-100 text-indigo-800 shadow-[0_2px_0_0_#a5b4fc,0_4px_8px_-2px_rgba(99,102,241,0.18)];
+  }
+  .diff-hard:hover:not(:disabled) {
+    @apply from-indigo-100 to-indigo-200;
+  }
+  .diff-hard:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#a5b4fc,inset_0_2px_4px_rgba(99,102,241,0.2)];
+  }
+
+  /* 專家：琥珀 */
+  .diff-expert {
+    @apply border-amber-400 bg-gradient-to-b from-amber-50 to-amber-100 text-amber-800 shadow-[0_2px_0_0_#fcd34d,0_4px_8px_-2px_rgba(217,119,6,0.2)];
+  }
+  .diff-expert:hover:not(:disabled) {
+    @apply from-amber-100 to-amber-200;
+  }
+  .diff-expert:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#fcd34d,inset_0_2px_4px_rgba(217,119,6,0.22)];
+  }
+
+  /* 大師：玫瑰 */
+  .diff-master {
+    @apply border-rose-400 bg-gradient-to-b from-rose-50 to-rose-100 text-rose-800 shadow-[0_2px_0_0_#fda4af,0_4px_8px_-2px_rgba(225,29,72,0.2)];
+  }
+  .diff-master:hover:not(:disabled) {
+    @apply from-rose-100 to-rose-200;
+  }
+  .diff-master:not(:disabled):active {
+    @apply shadow-[0_0_0_0_#fda4af,inset_0_2px_4px_rgba(225,29,72,0.22)];
+  }
+}

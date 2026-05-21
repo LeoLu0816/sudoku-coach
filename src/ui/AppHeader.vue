@@ -22,16 +22,20 @@ function onBack(): void {
 
 <template>
   <header
-    class="sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur"
+    class="sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200/70 bg-white/90 px-4 py-3 shadow-[0_2px_8px_-4px_rgba(15,23,42,0.1)] backdrop-blur-lg"
   >
     <button
-      class="rounded px-2 py-1 text-sm text-blue-600 hover:underline"
+      class="game-btn px-3 py-1.5 text-sm"
       data-testid="app-header-back"
       @click="onBack"
     >
       ← 首頁
     </button>
-    <h1 class="m-0 flex-1 text-lg font-semibold text-slate-800 md:text-xl">{{ title }}</h1>
+    <h1
+      class="m-0 flex-1 bg-gradient-to-br from-slate-700 to-slate-900 bg-clip-text text-lg font-bold text-transparent md:text-xl"
+    >
+      {{ title }}
+    </h1>
     <div class="flex items-center gap-2">
       <slot name="actions" />
     </div>

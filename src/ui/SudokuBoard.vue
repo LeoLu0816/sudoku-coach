@@ -199,9 +199,15 @@ function handleKeyDown(event: KeyboardEvent): void {
   grid-template-rows: repeat(9, 1fr);
   width: min(92vw, 560px);
   aspect-ratio: 1;
-  border: 2px solid #333;
+  border: 3px solid #1e293b;
+  border-radius: 8px;
   outline: none;
   user-select: none;
+  background: #fff;
+  box-shadow:
+    0 8px 24px -8px rgba(15, 23, 42, 0.25),
+    0 2px 6px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
 }
 
 /* ────────────────────────────────────────────────
@@ -211,11 +217,17 @@ function handleKeyDown(event: KeyboardEvent): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #bbb;
+  border: 1px solid #cbd5e1;
   cursor: pointer;
   position: relative;
   background-color: #fff;
-  transition: background-color 0.1s;
+  transition:
+    background-color 0.15s,
+    transform 0.1s;
+}
+
+.cell:active:not(.is-given) {
+  transform: scale(0.96);
 }
 
 /* ────────────────────────────────────────────────
@@ -247,45 +259,53 @@ function handleKeyDown(event: KeyboardEvent): void {
 }
 
 .is-user .cell-value {
-  color: #1d6fd8;
+  color: #2563eb;
+  font-weight: 600;
 }
 
 /* ────────────────────────────────────────────────
    高亮狀態（優先順序：conflict > selected > hint-target > same-value > peer > hint-related）
 ──────────────────────────────────────────────── */
 .is-conflict {
-  background-color: #ffe0e0 !important;
-  color: #d00;
+  background: linear-gradient(180deg, #fecaca 0%, #fca5a5 100%) !important;
 }
 
 .is-conflict .cell-value {
-  color: #d00;
+  color: #b91c1c;
 }
 
-/* 錯誤格（與解不符或違反規則）— 紅字（不一定有紅底，conflict 才有紅底） */
+/* 錯誤格（與解不符或違反規則）— 紅字 + 微紅底 */
+.is-wrong {
+  background-color: #fef2f2;
+}
+
 .is-wrong .cell-value {
-  color: #d00;
-  font-weight: 600;
+  color: #dc2626;
+  font-weight: 700;
 }
 
 .is-selected {
-  background-color: #bbdefb;
+  background: linear-gradient(180deg, #93c5fd 0%, #60a5fa 100%);
+  box-shadow: inset 0 0 0 2px #2563eb;
+  z-index: 1;
 }
 
 .is-hint-target {
-  background-color: #ffe082;
+  background: linear-gradient(180deg, #fde68a 0%, #fcd34d 100%);
+  box-shadow: inset 0 0 0 2px #d97706;
+  z-index: 1;
 }
 
 .is-same-value {
-  background-color: #fff9c4;
+  background-color: #fef3c7;
 }
 
 .is-peer {
-  background-color: #e8f4fd;
+  background-color: #eff6ff;
 }
 
 .is-hint-related {
-  background-color: #e8f5e9;
+  background-color: #ecfdf5;
 }
 
 /* ────────────────────────────────────────────────

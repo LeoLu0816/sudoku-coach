@@ -172,7 +172,7 @@ const techniqueUsageList = computed(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-slate-50 text-slate-800">
+  <div class="flex min-h-screen flex-col text-slate-800">
     <AppHeader title="分析模式" @back="goHome" />
 
     <!-- 手機版 Tabs：只在 < md 顯示 -->
@@ -223,7 +223,7 @@ const techniqueUsageList = computed(() => {
       <section v-show="activeTab === 'result'" class="w-full md:block">
         <div
           v-if="result"
-          class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          class="game-card p-6"
           data-testid="analyze-result"
         >
           <div
@@ -274,16 +274,16 @@ const techniqueUsageList = computed(() => {
               </p>
             </div>
 
-            <div class="mt-4 flex flex-wrap gap-2">
+            <div class="mt-4 flex flex-wrap gap-3">
               <button
-                class="rounded bg-emerald-600 px-5 py-2 text-white hover:bg-emerald-700"
+                class="game-btn game-btn-success px-5 py-2 text-sm"
                 data-testid="btn-enter-play"
                 @click="enterPlay"
               >
                 進入遊戲模式 →
               </button>
               <button
-                class="rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+                class="game-btn game-btn-primary px-5 py-2 text-sm"
                 data-testid="btn-enter-observe"
                 @click="enterObserve"
               >
