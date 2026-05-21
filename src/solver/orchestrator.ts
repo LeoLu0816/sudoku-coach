@@ -188,16 +188,70 @@ export function solveWithSteps(board: Board): SolveResult {
 /**
  * 給遊戲模式「提示」按鈕用：找下一步推薦
  * 對當前盤面找一個技巧 step；找不到回 null
+ *
+ * 候選來源策略：
+ *   - board 已有候選（使用者按過自動候選、或先前 eliminate hint 已套用）→ 直接沿用，
+ *     **不可** 整盤 recompute，否則會把先前 eliminate 步驟消去的候選抹回，
+ *     導致同一個裸對 / 隱對被反覆推薦（玩家視覺上「卡住」）。
+ *   - board 完全沒候選（使用者沒按過自動候選）→ 整盤重算以便能找到 single 類提示。
  */
 export function nextHintStep(board: Board): TechniqueStep | null {
   if (isSolved(board)) return null
 
-  const current = recomputeAllCandidates(board)
+  const hasAnyCandidates = board.cells.some((c) => c.candidates.size > 0)
+  const current = hasAnyCandidates ? board : recomputeAllCandidates(board)
+
   for (const tech of registeredTechniques) {
     const step = tech.apply(current)
     if (step) return step
   }
   return null
+}
+
+/**
+ * 遊戲模式提示：先試技巧，技巧全部失效時 fallback 到「暴力回溯」
+ *
+ * 行為：
+ *   1. 先呼叫 nextHintStep 走標準技巧 pipeline
+ *   2. 技巧找不到時：從 puzzle.solution 取出 **index 最小的空格** 的答案，
+ *      包成 `place` step（technique='backtrack'）供玩家套用
+ *   3. 已解盤 → null
+ *
+ * 與 solveWithSteps 的 backtrack fallback 不同：
+ *   - 這裡每次只回「一格」step，因為提示是逐步引導
+ *   - 直接用既有 solution，不重跑 backtrack（更快，也避開使用者填錯值導致盤面無解的情況）
+ */
+export function nextHintStepWithFallback(
+  board: Board,
+  solution: ReadonlyArray<number>,
+): TechniqueStep | null {
+  const techStep = nextHintStep(board)
+  if (techStep) return techStep
+
+  if (isSolved(board)) return null
+
+  // 技巧失效：挑 index 最小的空格給暴力回溯提示
+  let targetIndex = -1
+  for (let i = 0; i < 81; i++) {
+    if (board.cells[i].value === 0) {
+      targetIndex = i
+      break
+    }
+  }
+  if (targetIndex === -1) return null
+
+  const value = solution[targetIndex]
+  const row = Math.floor(targetIndex / 9) + 1
+  const col = (targetIndex % 9) + 1
+
+  return {
+    technique: 'backtrack',
+    targets: [targetIndex],
+    related: [],
+    action: 'place',
+    placements: [{ index: targetIndex, value }],
+    explanation: `目前已無可推導的邏輯技巧，改用暴力回溯：R${row}C${col} 應填入 ${value}。`,
+  }
 }
 
 /** 暴露給其他模組（包括測試）的 helper */

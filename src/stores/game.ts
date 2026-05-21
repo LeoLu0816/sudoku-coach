@@ -10,7 +10,7 @@ import {
 } from '@/core/board'
 import { findConflicts, isSolved as boardIsSolved, recomputeAllCandidates } from '@/core/validator'
 import { generatePuzzle } from '@/generator/puzzleGenerator'
-import { applyStepAndUpdate, nextHintStep } from '@/solver/orchestrator'
+import { applyStepAndUpdate, nextHintStep, nextHintStepWithFallback } from '@/solver/orchestrator'
 
 /** 遊戲狀態 */
 export interface GameState {
@@ -292,10 +292,18 @@ export const useGameStore = defineStore('game', {
       this.pencilMode = !this.pencilMode
     },
 
-    /** 呼叫 orchestrator 取得下一步提示 */
+    /**
+     * 呼叫 orchestrator 取得下一步提示
+     * 有 puzzle.solution 時走 fallback 版（技巧失效會給暴力回溯提示），避免玩家卡關；
+     * 沒 puzzle（理論上不會發生於遊戲模式）退化為純技巧版
+     */
     requestHint(): void {
       if (!this.board) return
-      this.currentHint = nextHintStep(this.board)
+      if (this.puzzle) {
+        this.currentHint = nextHintStepWithFallback(this.board, this.puzzle.solution)
+      } else {
+        this.currentHint = nextHintStep(this.board)
+      }
     },
 
     /**
@@ -320,7 +328,12 @@ export const useGameStore = defineStore('game', {
       const next = applyStepAndUpdate(this.board, step)
       // _pushChange 會把 currentHint 清成 null；之後再自動求下一步
       this._pushChange(next)
-      this.currentHint = nextHintStep(this.board)
+      // 自動推進下一步也要走 fallback 版，否則套完暴力回溯這一格後若技巧仍失效會「無提示」
+      if (this.puzzle) {
+        this.currentHint = nextHintStepWithFallback(this.board, this.puzzle.solution)
+      } else {
+        this.currentHint = nextHintStep(this.board)
+      }
     },
 
     clearHint(): void {

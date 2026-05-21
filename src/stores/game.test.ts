@@ -172,6 +172,35 @@ describe('useGameStore', () => {
     expect(s.wrongCells).not.toContain(empty.index)
   })
 
+  it('applyHint 對 eliminate 類技巧套用後，下一步提示不會回到同一個 eliminate（regression：裸對卡住）', () => {
+    const s = useGameStore()
+    s.loadPuzzle(fixtureToPuzzle('easy-01'))
+    s.fillAllCandidates()
+    // 構造一個會真的消去候選的 eliminate hint
+    const target = s.board!.cells.find((c) => c.candidates.size >= 2)!
+    const toRemove = [...target.candidates][0]
+    const fakeHint = {
+      technique: 'naked-pair' as const,
+      targets: [target.index],
+      related: [],
+      action: 'eliminate' as const,
+      eliminations: [{ index: target.index, values: [toRemove] }],
+      explanation: '測試用：模擬裸對 eliminate',
+    }
+    s.currentHint = fakeHint
+    s.applyHint()
+    // 套用後該格已不含 toRemove
+    expect(s.board!.cells[target.index].candidates.has(toRemove)).toBe(false)
+    // currentHint 不應該又指向同樣那筆（含 toRemove）的 eliminate；
+    // 也就是 nextHintStep 不能因為整盤重算把 toRemove 抹回後又推薦相同消去
+    if (s.currentHint !== null) {
+      const stillRecommendsSameElim = s.currentHint.eliminations?.some(
+        (e) => e.index === target.index && e.values.includes(toRemove),
+      )
+      expect(stillRecommendsSameElim).not.toBe(true)
+    }
+  })
+
   it('applyHint 對 eliminate 類技巧（隱對/裸對）確實消去候選', () => {
     const s = useGameStore()
     s.loadPuzzle(fixtureToPuzzle('easy-01'))
@@ -312,6 +341,45 @@ describe('useGameStore', () => {
     s.clearWrongCells()
     expect(s.board).toBe(before)
     expect(s.history.length).toBe(hLen)
+  })
+
+  it('requestHint 在技巧全部失效時 fallback 到暴力回溯（避免玩家卡關）', () => {
+    const s = useGameStore()
+    const puzzle = fixtureToPuzzle('easy-01')
+    // 拿 easy 題的 solution 構造 puzzle，但 given 全空 → 技巧無法找 step
+    const emptyPuzzle: Puzzle = {
+      id: 'empty-test',
+      difficulty: 'easy',
+      given: Array(81).fill(0) as Puzzle['given'],
+      solution: puzzle.solution,
+    }
+    s.loadPuzzle(emptyPuzzle)
+    s.requestHint()
+    expect(s.currentHint).not.toBeNull()
+    expect(s.currentHint!.technique).toBe('backtrack')
+    expect(s.currentHint!.action).toBe('place')
+    expect(s.currentHint!.placements![0].index).toBe(0)
+    expect(s.currentHint!.placements![0].value).toBe(emptyPuzzle.solution[0])
+  })
+
+  it('applyHint 套用暴力回溯後，自動推進的下一步仍會優先回到技巧', () => {
+    const s = useGameStore()
+    const puzzle = fixtureToPuzzle('easy-01')
+    const emptyPuzzle: Puzzle = {
+      id: 'empty-test',
+      difficulty: 'easy',
+      given: Array(81).fill(0) as Puzzle['given'],
+      solution: puzzle.solution,
+    }
+    s.loadPuzzle(emptyPuzzle)
+    s.requestHint()
+    // 第一發：fallback 給 backtrack
+    expect(s.currentHint!.technique).toBe('backtrack')
+    s.applyHint()
+    // 套用後 board 上 index 0 已填入 solution[0]
+    expect(s.board!.cells[0].value).toBe(emptyPuzzle.solution[0])
+    // 自動推進：可能是技巧或仍是 backtrack（取決於剩餘盤面），但不應該卡住為 null
+    expect(s.currentHint).not.toBeNull()
   })
 
   it('newGame / loadPuzzle 後 errorCount 歸零', () => {
