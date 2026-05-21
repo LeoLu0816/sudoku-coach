@@ -31,6 +31,8 @@ const canUndo = computed(() => store.canUndo)
 const canRedo = computed(() => store.canRedo)
 const remainingCounts = computed(() => store.remainingCounts)
 const isSolved = computed(() => store.isSolved)
+const wrongCells = computed(() => store.wrongCells)
+const errorCount = computed(() => store.errorCount)
 
 /** 是否顯示難度選擇彈窗 */
 const showDifficultyPicker = ref<boolean>(false)
@@ -283,10 +285,25 @@ const difficultyLabel = computed(() => {
         data-testid="game-layout"
       >
         <div class="flex flex-col items-center gap-3">
+          <!-- 錯誤次數狀態列：放在棋盤上方 -->
+          <div
+            class="flex w-full max-w-[560px] items-center justify-between text-sm text-slate-600"
+            data-testid="game-status-bar"
+          >
+            <span>難度：{{ difficultyLabel }}</span>
+            <span
+              :class="errorCount > 0 ? 'font-semibold text-red-600' : ''"
+              data-testid="error-count"
+            >
+              ❌ 錯誤：{{ errorCount }} 次
+            </span>
+          </div>
+
           <SudokuBoard
             :board="board"
             :selected-index="selectedIndex"
             :conflicts="conflicts"
+            :wrong-cells="wrongCells"
             :show-candidates="autoCandidates || pencilMode"
             :hint-highlight="hintHighlight"
             @select-cell="onSelectCell"

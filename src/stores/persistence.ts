@@ -11,6 +11,8 @@ interface SerializedProgress {
   selectedIndex: number | null
   pencilMode: boolean
   autoCandidates: boolean
+  /** 累計錯誤次數 */
+  errorCount: number
 }
 
 /** 取得目前 store snapshot 寫入 localStorage */
@@ -23,6 +25,7 @@ export function saveProgress(): void {
     selectedIndex: store.selectedIndex,
     pencilMode: store.pencilMode,
     autoCandidates: store.autoCandidates,
+    errorCount: store.errorCount,
   }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
@@ -52,6 +55,8 @@ export function loadProgress(): boolean {
     store.selectedIndex = data.selectedIndex
     store.pencilMode = data.pencilMode
     store.autoCandidates = data.autoCandidates
+    // loadPuzzle 會把 errorCount 歸零，這裡覆寫回原本記錄值（舊資料無此欄位則維持 0）
+    store.errorCount = typeof data.errorCount === 'number' ? data.errorCount : 0
     return true
   } catch {
     return false

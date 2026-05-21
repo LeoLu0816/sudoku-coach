@@ -13,10 +13,13 @@ interface Props {
   showCandidates: boolean
   /** 提示高亮：targets=主目標格、related=參考格；null=無提示 */
   hintHighlight?: { targets: CellIndex[]; related: CellIndex[] } | null
+  /** 錯誤格（與 solution 不符或違反規則）— 顯示紅字 */
+  wrongCells?: CellIndex[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   hintHighlight: null,
+  wrongCells: () => [],
 })
 
 const emit = defineEmits<{
@@ -82,6 +85,9 @@ const hintRelatedSet = computed<Set<CellIndex>>(() => {
   return new Set(props.hintHighlight.related)
 })
 
+/** 錯誤格集合 */
+const wrongSet = computed<Set<CellIndex>>(() => new Set(props.wrongCells))
+
 // ────────────────────────────────────────────────
 // 取得單格的 CSS class 清單
 // 1. 基本 cell class
@@ -106,6 +112,7 @@ function getCellClasses(index: CellIndex): Record<string, boolean> {
     'is-peer': !isSelected && peerSet.value.has(index),
     'is-same-value': isSameValue,
     'is-conflict': conflictSet.value.has(index),
+    'is-wrong': wrongSet.value.has(index),
     'is-hint-target': hintTargetSet.value.has(index),
     'is-hint-related': hintRelatedSet.value.has(index),
   }
@@ -253,6 +260,12 @@ function handleKeyDown(event: KeyboardEvent): void {
 
 .is-conflict .cell-value {
   color: #d00;
+}
+
+/* 錯誤格（與解不符或違反規則）— 紅字（不一定有紅底，conflict 才有紅底） */
+.is-wrong .cell-value {
+  color: #d00;
+  font-weight: 600;
 }
 
 .is-selected {

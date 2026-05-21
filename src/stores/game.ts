@@ -22,6 +22,8 @@ export interface GameState {
   /** redo 堆疊 */
   future: Board[]
   currentHint: TechniqueStep | null
+  /** 累計錯誤次數（每次輸入錯誤值 +1，含同格反覆改錯） */
+  errorCount: number
 }
 
 /**
@@ -40,6 +42,7 @@ export const useGameStore = defineStore('game', {
     history: [],
     future: [],
     currentHint: null,
+    errorCount: 0,
   }),
 
   getters: {
@@ -61,6 +64,26 @@ export const useGameStore = defineStore('game', {
 
     canRedo(state): boolean {
       return state.future.length > 0
+    },
+
+    /**
+     * 錯誤格 index 清單：玩家填的、非 0、且與 puzzle.solution 不符的格子
+     * 給 SudokuBoard 紅字標示用
+     */
+    wrongCells(state): CellIndex[] {
+      if (!state.board || !state.puzzle) {
+        return []
+      }
+      const wrong: CellIndex[] = []
+      for (const cell of state.board.cells) {
+        if (cell.isGiven || cell.value === 0) {
+          continue
+        }
+        if (cell.value !== state.puzzle.solution[cell.index]) {
+          wrong.push(cell.index)
+        }
+      }
+      return wrong
     },
 
     /** 各數字剩餘可填數量（[1..9] 各算；length 9） */
@@ -87,6 +110,7 @@ export const useGameStore = defineStore('game', {
       this.history = []
       this.future = []
       this.currentHint = null
+      this.errorCount = 0
     },
 
     /** 載入既有題目（給 persistence 還原或分析模式用） */
@@ -98,6 +122,7 @@ export const useGameStore = defineStore('game', {
       this.history = []
       this.future = []
       this.currentHint = null
+      this.errorCount = 0
     },
 
     /** 選格 */
@@ -124,10 +149,41 @@ export const useGameStore = defineStore('game', {
         const next = boardToggleCandidate(this.board, this.selectedIndex, value)
         this._pushChange(next)
       } else {
+        // 1. 先判定本次輸入是否為錯誤（與解不符 或 違反同行/欄/宮規則），若是則 errorCount +1
+        if (value >= 1 && value <= 9 && this._isWrongInput(this.selectedIndex, value)) {
+          this.errorCount += 1
+        }
+        // 2. 套用填值
         let next = setCellValue(this.board, this.selectedIndex, value as CellValue)
         if (this.autoCandidates) next = recomputeAllCandidates(next)
         this._pushChange(next)
       }
+    },
+
+    /**
+     * 判斷在 index 填入 value 是否為錯誤：
+     *   1. 與 puzzle.solution 不符
+     *   2. 同行/欄/宮已有相同值（peer 中存在）
+     * 任一成立即為錯
+     */
+    _isWrongInput(index: CellIndex, value: number): boolean {
+      if (!this.board || !this.puzzle) return false
+
+      // 條件 1：與最終解不符
+      if (this.puzzle.solution[index] !== value) {
+        return true
+      }
+
+      // 條件 2：peer 中已存在相同值（違反盤面規則）
+      const target = this.board.cells[index]
+      for (const other of this.board.cells) {
+        if (other.index === index) continue
+        if (other.value !== value) continue
+        if (other.row === target.row || other.col === target.col || other.box === target.box) {
+          return true
+        }
+      }
+      return false
     },
 
     /** 清除選中格 */
