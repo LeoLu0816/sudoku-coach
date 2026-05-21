@@ -3,6 +3,8 @@ import type { Board, CellIndex, CellValue, Conflict, Difficulty, Puzzle, Techniq
 import {
   clearCell as boardClearCell,
   createBoardFromGiven,
+  getPeers,
+  setCandidates,
   setCellValue,
   toggleCandidate as boardToggleCandidate,
 } from '@/core/board'
@@ -16,7 +18,6 @@ export interface GameState {
   board: Board | null
   selectedIndex: CellIndex | null
   pencilMode: boolean
-  autoCandidates: boolean
   /** undo 堆疊（記錄改動前的 Board） */
   history: Board[]
   /** redo 堆疊 */
@@ -38,7 +39,6 @@ export const useGameStore = defineStore('game', {
     board: null,
     selectedIndex: null,
     pencilMode: false,
-    autoCandidates: false,
     history: [],
     future: [],
     currentHint: null,
@@ -105,7 +105,7 @@ export const useGameStore = defineStore('game', {
       const puzzle = generatePuzzle({ difficulty, timeoutMs: 8000 })
       const board = createBoardFromGiven(puzzle.given)
       this.puzzle = puzzle
-      this.board = this.autoCandidates ? recomputeAllCandidates(board) : board
+      this.board = board
       this.selectedIndex = null
       this.history = []
       this.future = []
@@ -139,7 +139,12 @@ export const useGameStore = defineStore('game', {
       this.currentHint = null
     },
 
-    /** 輸入數字：依 pencilMode 切換填值或候選 */
+    /**
+     * 輸入數字
+     * - 鉛筆模式：切換該格候選
+     * - 非鉛筆模式：填值；錯誤判定 +1；對候選做「增量更新」
+     *   （清自身候選 + 從 peer 候選移除此值），不整盤 recompute → 不會抹掉先前 hint eliminate 的結果
+     */
     inputNumber(value: number): void {
       if (!this.board || this.selectedIndex === null) return
       const cell = this.board.cells[this.selectedIndex]
@@ -149,15 +154,38 @@ export const useGameStore = defineStore('game', {
         const next = boardToggleCandidate(this.board, this.selectedIndex, value)
         this._pushChange(next)
       } else {
-        // 1. 先判定本次輸入是否為錯誤（與解不符 或 違反同行/欄/宮規則），若是則 errorCount +1
+        // 1. 錯誤判定
         if (value >= 1 && value <= 9 && this._isWrongInput(this.selectedIndex, value)) {
           this.errorCount += 1
         }
-        // 2. 套用填值
+        // 2. 套用填值 + 增量候選更新
         let next = setCellValue(this.board, this.selectedIndex, value as CellValue)
-        if (this.autoCandidates) next = recomputeAllCandidates(next)
+        next = this._incrementalCandidateUpdateAfterPlace(next, this.selectedIndex, value)
         this._pushChange(next)
       }
+    },
+
+    /**
+     * 在 index 放入 value 後，做增量候選更新：
+     *   1. 清空 index 自身候選
+     *   2. 從同行/欄/宮的 peer 候選中移除 value
+     * 若整盤候選原本就空（使用者未按過自動候選），此 helper 也安全 — no-op-ish
+     */
+    _incrementalCandidateUpdateAfterPlace(board: Board, index: CellIndex, value: number): Board {
+      let next = board
+      // 清自身候選
+      if (next.cells[index].candidates.size > 0) {
+        next = setCandidates(next, index, new Set())
+      }
+      // peer 候選移除
+      for (const peer of getPeers(next, index)) {
+        if (peer.value !== 0) continue
+        if (!peer.candidates.has(value)) continue
+        const newCands = new Set(peer.candidates)
+        newCands.delete(value)
+        next = setCandidates(next, peer.index, newCands)
+      }
+      return next
     },
 
     /**
@@ -186,14 +214,61 @@ export const useGameStore = defineStore('game', {
       return false
     },
 
-    /** 清除選中格 */
+    /** 清除選中格（值清為 0，候選不動） */
     clearCell(): void {
       if (!this.board || this.selectedIndex === null) return
       const cell = this.board.cells[this.selectedIndex]
       if (cell.isGiven) return
 
-      let next = boardClearCell(this.board, this.selectedIndex)
-      if (this.autoCandidates) next = recomputeAllCandidates(next)
+      const next = boardClearCell(this.board, this.selectedIndex)
+      this._pushChange(next)
+    },
+
+    /**
+     * 一次清空所有錯誤格（與 puzzle.solution 不符）的值
+     * - 合併為單筆 history（可用 undo 一次還原）
+     * - 不重置 errorCount（這是歷史錯誤計數）
+     * - wrongCells 為空時 no-op
+     */
+    clearWrongCells(): void {
+      if (!this.board || !this.puzzle) return
+      const wrongs = this.wrongCells
+      if (wrongs.length === 0) return
+
+      let next = this.board
+      for (const idx of wrongs) {
+        next = boardClearCell(next, idx)
+      }
+      this._pushChange(next)
+    },
+
+    /**
+     * 自動填入所有候選：對每個空格計算合法候選並寫入，覆蓋現有候選
+     * - 使用者中途呼叫一次即可看到所有候選
+     * - 推進 history → 可 undo 還原
+     */
+    fillAllCandidates(): void {
+      if (!this.board) return
+      const next = recomputeAllCandidates(this.board)
+      this._pushChange(next)
+    },
+
+    /**
+     * 移除所有鉛筆：把每格候選都清空（值不動）
+     * - 推進 history → 可 undo 還原
+     * - 整盤候選都已是空時 no-op
+     */
+    clearAllCandidates(): void {
+      if (!this.board) return
+      let next = this.board
+      let changed = false
+      for (const cell of this.board.cells) {
+        if (cell.candidates.size > 0) {
+          next = setCandidates(next, cell.index, new Set())
+          changed = true
+        }
+      }
+      if (!changed) return
       this._pushChange(next)
     },
 
@@ -217,13 +292,6 @@ export const useGameStore = defineStore('game', {
       this.pencilMode = !this.pencilMode
     },
 
-    toggleAutoCandidates(): void {
-      this.autoCandidates = !this.autoCandidates
-      if (this.autoCandidates && this.board) {
-        this.board = recomputeAllCandidates(this.board)
-      }
-    },
-
     /** 呼叫 orchestrator 取得下一步提示 */
     requestHint(): void {
       if (!this.board) return
@@ -233,22 +301,26 @@ export const useGameStore = defineStore('game', {
     /**
      * 套用當前 hint
      * 流程：
-     *   1. eliminate 類技巧（naked pair / x-wing 等）只動候選；若使用者沒開自動候選 → 棋盤上看不到任何變化（畫面像沒反應）。
-     *      → 先 recomputeAllCandidates 補上完整候選，再套用 eliminate，並自動開啟 autoCandidates 讓使用者看到結果。
-     *   2. 使用 applyStepAndUpdate 做「增量」更新，**不可** 用 recomputeAllCandidates 取代整盤重算，否則 eliminate 步驟剛消去的候選會被一筆抹回（這正是原本套用裸對沒反應的原因）。
+     *   1. eliminate 類技巧（裸對 / 隱對 / X-Wing 等）只動候選；若 board 候選全空（使用者沒按過自動候選），eliminate 將 no-op → 先補上完整候選。
+     *   2. 使用 applyStepAndUpdate 做「增量」更新，**不可** 用 recomputeAllCandidates 取代整盤重算，否則 eliminate 步驟剛消去的候選會被一筆抹回（這正是原本套用裸對沒反應的根因）。
+     *   3. 套用完成後自動求下一步提示，讓使用者「套用 → 看到下一步」連貫；無剩餘提示則 currentHint=null（顯示空狀態）。
      */
     applyHint(): void {
       if (!this.board || !this.currentHint) return
       const step = this.currentHint
 
-      // eliminate 類技巧若候選未顯示，使用者看不到效果 → 自動補上全候選並開啟自動候選
-      if (step.action === 'eliminate' && !this.autoCandidates) {
-        this.autoCandidates = true
-        this.board = recomputeAllCandidates(this.board)
+      // 若 board 候選全空（使用者沒按過自動候選），eliminate 將 no-op → 先補上完整候選
+      if (step.action === 'eliminate') {
+        const hasAnyCandidates = this.board.cells.some((c) => c.candidates.size > 0)
+        if (!hasAnyCandidates) {
+          this.board = recomputeAllCandidates(this.board)
+        }
       }
 
       const next = applyStepAndUpdate(this.board, step)
+      // _pushChange 會把 currentHint 清成 null；之後再自動求下一步
       this._pushChange(next)
+      this.currentHint = nextHintStep(this.board)
     },
 
     clearHint(): void {

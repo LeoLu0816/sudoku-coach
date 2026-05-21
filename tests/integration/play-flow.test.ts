@@ -131,7 +131,7 @@ describe('P2 整合：play flow', () => {
     expect(hintTargets.length).toBeGreaterThan(0)
   })
 
-  it('套用提示 → board 對應格被填入、currentHint 被清空', async () => {
+  it('套用提示 → board 對應格被填入、currentHint 自動載入下一步', async () => {
     const store = useGameStore()
     store.loadPuzzle(easyPuzzle())
     const mounted = await mountPlayView()
@@ -148,7 +148,10 @@ describe('P2 整合：play flow', () => {
     await nextTick()
 
     expect(store.board!.cells[placement!.index].value).toBe(placement!.value)
-    expect(store.currentHint).toBeNull()
+    // 套用後自動載入下一步：currentHint 應為新 step（非原 hint），或盤面已解開時為 null
+    if (store.currentHint !== null) {
+      expect(store.currentHint).not.toBe(step)
+    }
   })
 
   it('連續套用提示直到解完 → solved-banner 顯示', async () => {

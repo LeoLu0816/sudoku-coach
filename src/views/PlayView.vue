@@ -23,7 +23,7 @@ import BottomBar from '@/ui/BottomBar.vue'
 
 const router = useRouter()
 const store = useGameStore()
-const { board, selectedIndex, pencilMode, autoCandidates, currentHint } = storeToRefs(store)
+const { board, selectedIndex, pencilMode, currentHint } = storeToRefs(store)
 
 // 衝突 / undo redo / 剩餘數量 / 已解開：以 computed 取 getter（避免 reactive 邊界問題）
 const conflicts = computed(() => store.conflicts)
@@ -33,6 +33,17 @@ const remainingCounts = computed(() => store.remainingCounts)
 const isSolved = computed(() => store.isSolved)
 const wrongCells = computed(() => store.wrongCells)
 const errorCount = computed(() => store.errorCount)
+
+/** 是否顯示候選微網格：盤面上任一格有候選，或目前是鉛筆模式 */
+const showCandidates = computed<boolean>(() => {
+  if (pencilMode.value) {
+    return true
+  }
+  if (!board.value) {
+    return false
+  }
+  return board.value.cells.some((c) => c.candidates.size > 0)
+})
 
 /** 是否顯示難度選擇彈窗 */
 const showDifficultyPicker = ref<boolean>(false)
@@ -180,8 +191,19 @@ function onHint(): void {
   store.requestHint()
 }
 
-function onToggleAutoCandidates(): void {
-  store.toggleAutoCandidates()
+/** 自動填入所有候選（一次計算） */
+function onFillCandidates(): void {
+  store.fillAllCandidates()
+}
+
+/** 移除所有鉛筆（清空所有格的候選） */
+function onClearCandidates(): void {
+  store.clearAllCandidates()
+}
+
+/** 一次清空所有錯誤格（與解不符的格子） */
+function onClearWrong(): void {
+  store.clearWrongCells()
 }
 
 /** 檢查錯誤：閃一下訊息（衝突已在棋盤上紅色顯示） */
@@ -217,8 +239,15 @@ function onNewGameFromDrawer(): void {
 }
 
 /** 從抽屜內按「自動候選」 */
-function onToggleAutoCandidatesFromDrawer(): void {
-  onToggleAutoCandidates()
+function onFillCandidatesFromDrawer(): void {
+  moreDrawerOpen.value = false
+  onFillCandidates()
+}
+
+/** 從抽屜內按「移除所有鉛筆」 */
+function onClearCandidatesFromDrawer(): void {
+  moreDrawerOpen.value = false
+  onClearCandidates()
 }
 
 /** 從抽屜內按「檢查衝突」 */
@@ -304,7 +333,7 @@ const difficultyLabel = computed(() => {
             :selected-index="selectedIndex"
             :conflicts="conflicts"
             :wrong-cells="wrongCells"
-            :show-candidates="autoCandidates || pencilMode"
+            :show-candidates="showCandidates"
             :hint-highlight="hintHighlight"
             @select-cell="onSelectCell"
             @key-input="onBoardKey"
@@ -376,12 +405,12 @@ const difficultyLabel = computed(() => {
           <ControlPanel
             :can-undo="canUndo"
             :can-redo="canRedo"
-            :auto-candidates="autoCandidates"
             @new-game="onNewGame"
             @undo="onUndo"
             @redo="onRedo"
             @hint="onHint"
-            @toggle-auto-candidates="onToggleAutoCandidates"
+            @fill-candidates="onFillCandidates"
+            @clear-candidates="onClearCandidates"
             @check-errors="onCheckErrors"
           />
         </div>
@@ -407,11 +436,12 @@ const difficultyLabel = computed(() => {
             💡 提示
           </button>
           <button
-            class="flex-1 rounded border border-slate-300 bg-white py-2 text-sm"
-            :class="{ 'bg-amber-100': pencilMode }"
-            @click="store.togglePencil"
+            class="flex-1 rounded border border-slate-300 bg-white py-2 text-sm disabled:opacity-50"
+            data-testid="btn-clear-wrong"
+            :disabled="wrongCells.length === 0"
+            @click="onClearWrong"
           >
-            ✏️ 鉛筆
+            🧹 清錯
           </button>
         </div>
       </div>
@@ -441,16 +471,20 @@ const difficultyLabel = computed(() => {
         >
           🎲 新局
         </button>
-        <label
-          class="flex items-center justify-between rounded border border-slate-300 bg-white px-4 py-3"
+        <button
+          class="rounded border border-slate-300 bg-white px-4 py-3 text-left"
+          data-testid="btn-fill-candidates-drawer"
+          @click="onFillCandidatesFromDrawer"
         >
-          <span>🔍 自動顯示候選數</span>
-          <input
-            type="checkbox"
-            :checked="autoCandidates"
-            @change="onToggleAutoCandidatesFromDrawer"
-          />
-        </label>
+          🔍 自動填入候選
+        </button>
+        <button
+          class="rounded border border-slate-300 bg-white px-4 py-3 text-left"
+          data-testid="btn-clear-candidates-drawer"
+          @click="onClearCandidatesFromDrawer"
+        >
+          🧽 移除所有鉛筆
+        </button>
         <button
           class="rounded border border-slate-300 bg-white px-4 py-3 text-left"
           @click="onCheckErrorsFromDrawer"

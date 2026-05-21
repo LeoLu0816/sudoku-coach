@@ -41,14 +41,22 @@
       提示
     </button>
 
-    <!-- 自動候選 toggle：啟用時加 .is-active -->
+    <!-- 自動填入候選：一次計算所有空格的合法候選並寫入（覆蓋現有候選） -->
     <button
       class="ctrl-btn"
-      :class="{ 'is-active': autoCandidates }"
-      data-testid="btn-auto-candidates"
-      @click="emit('toggleAutoCandidates')"
+      data-testid="btn-fill-candidates"
+      @click="emit('fillCandidates')"
     >
       自動候選
+    </button>
+
+    <!-- 移除所有鉛筆：清空所有格的候選 -->
+    <button
+      class="ctrl-btn"
+      data-testid="btn-clear-candidates"
+      @click="emit('clearCandidates')"
+    >
+      移除鉛筆
     </button>
 
     <!-- 檢查錯誤按鈕 -->
@@ -65,7 +73,7 @@
 <script setup lang="ts">
 /**
  * ControlPanel — 控制面板元件
- * 提供：新局 / 復原 / 重做 / 提示 / 自動候選 toggle / 檢查錯誤
+ * 提供：新局 / 復原 / 重做 / 提示 / 自動候選 / 移除鉛筆 / 檢查錯誤
  * 純 prop-driven，所有動作透過 emit 向父元件回報
  */
 
@@ -74,8 +82,6 @@ interface Props {
   canUndo: boolean;
   /** 是否可執行重做 */
   canRedo: boolean;
-  /** 自動候選是否開啟 */
-  autoCandidates: boolean;
 }
 
 const props = defineProps<Props>();
@@ -89,8 +95,10 @@ const emit = defineEmits<{
   redo: [];
   /** 請求提示 */
   hint: [];
-  /** 切換自動候選開關 */
-  toggleAutoCandidates: [];
+  /** 自動填入所有候選 */
+  fillCandidates: [];
+  /** 移除所有鉛筆（清空所有候選） */
+  clearCandidates: [];
   /** 一次檢查所有錯誤 */
   checkErrors: [];
 }>();
